@@ -43,7 +43,7 @@ true
 ### Math
 
 Note, random/0 is [0,1), random/1 is [1,n].
-Also, random always seeds from 1, so in real usages, set the `randomseem` first.
+Also, random always seeds from 1, so in real usages, set the `randomseed` first.
 
 ```
 > math.huge
@@ -506,7 +506,7 @@ command. This affects behavior of `local`.
 
 `do`-`end` blocks can introduce scope, including when interactive.
 
-use `strict.lua` module to error on attempting to assign to global variables
+Use `strict.lua` module to error on attempting to assign to global variables
 that haven't been defined.
 
 It is faster to use `local` variables, so prefer over global.
@@ -578,7 +578,7 @@ Can be useful for writing state machines.
 
 Labels are considered void statements, which allows them to appear before and
 `end` and still return the value from the prior statement.
-```
+```lua
 while some_condition do
   if some_other_condition then goto continue end
   local var = something
@@ -888,5 +888,65 @@ Several options for coding an integer: "b" (char), "h" (short), "i" (int), "l"
 suffix "i", e.g., "i7" produces seven-byte integers. Uppercase makes it the
 unsigned version.
 
-Plenty more options, like "<" for bigendian and ">" for littleendian. See
+Plenty more options, like "<" for big-endian and ">" for little-endian. See
 Chapter 13 for options.
+
+## Serialization
+
+Can store and read files using `dofile` with data in the file looking like Lua
+tables.
+
+`string.format("%q", x)` safely serialized strings with problematic characters
+and distinguishes between integer and float to ensure they are read back in
+correctly.
+
+## Compilation
+
+`loadfile` is what does the hard work in `dofile` but does not raise errors,
+returning error codes instead.
+
+`load` reads from a string or function. But note that it only accesses global
+variables, not local.
+```lua
+f = assert(load("i = i + 1"))
+i = 0
+f(); print(i) --> 1
+f(); print(i) --> 2
+```
+
+These are equivalent: `loadfile(filename)` and `load(io.lines(filename, "*L"))`
+
+"binary chunk" is a precompiled file (e.g., with `luac`)
+Precompile with `luac -o prog.lc prog.lua`
+Precompiled code files won't necessarily be smaller, but will run faster.
+
+### Errors
+
+`error(message)` signals an error in the code. It can also be passed a
+"level", like when you want to signal that the calling code passed an
+incorrect argument.
+```lua
+function foo(str)
+  if type(str) ~= "string" then
+    error("string expected", 2)
+  end
+  -- code
+end
+```
+
+`assert(fn_call, message)` ensures that first returned value is not `nil`,
+otherwise raises an error with provided message. If no `message` is provided,
+it will check for the second returned value and return that, hence the idiom
+of `nil, error_code` as a return.
+
+Note that Lua will always evaluate functions in the `message` argument, do be
+careful of what you put in there.
+
+Author’s guideline: An exception that is easily avoided should raise an error;
+otherwise, it should return an error code.
+
+`pcall` (protected call) is used to encapsulate our code to handle errors
+instead of passing them out to the invoking application (like when Lua is
+embedded). `pcall` unwinds (destroys) part of the traceback stack when
+handling errors, so use `xpcall` which takes a message handler function if you
+need a more detailed traceback, such as with `debug.traceback`.
