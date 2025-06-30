@@ -1,0 +1,3 @@
+#!/usr/bin/env lua
+-- #!/opt/homebrew/bin/lua
+print(arg[0])
