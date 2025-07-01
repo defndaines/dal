@@ -950,3 +950,17 @@ instead of passing them out to the invoking application (like when Lua is
 embedded). `pcall` unwinds (destroys) part of the traceback stack when
 handling errors, so use `xpcall` which takes a message handler function if you
 need a more detailed traceback, such as with `debug.traceback`.
+
+## Modules and Packages
+
+If you need to reload a library, erase it first.
+`package.loaded.<modname> = nil`
+Then the next `require` will pull it fresh.
+
+Submodules are stored independently in the system, but are treated as filepath
+separators when loading. For example,
+`c = require('src.complex')`
+
+Note that storing a module in `complex/init.lua` will load with
+`require('complex')`, and this allow any submodules to exist alongside in that
+same directory.
