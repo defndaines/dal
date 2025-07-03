@@ -964,3 +964,66 @@ separators when loading. For example,
 Note that storing a module in `complex/init.lua` will load with
 `require('complex')`, and this allow any submodules to exist alongside in that
 same directory.
+
+## Iterators and the Generic `for`
+
+Use a factory that returns a function.
+```lua
+function values(t)
+  local i = 0
+  return function() i = i + 1; return t[i] end
+end
+
+t = {10, 20, 30}
+for element in values(t) do
+  print(element)
+end
+```
+
+Generic `for`:
+```
+for <var-list> in <exp-list> do
+  <body>
+end
+```
+The first variable in the list is the "control variable". When it becomes
+`nil`, the loop ends.
+
+Expression returns three variables kept by `for`: iterator function, invariant
+state, and initial value for the control variable. If more than three
+variables are returned, rest are dropped.
+
+Equivalent to generic `for`:
+```lua
+do
+  local _f, _s, _var = <explist>
+  while true do
+    local var_1, ..., var_n = _f(_s, _var)
+    _var = var_1
+    if _var == nil then break end
+    <block>
+  end
+end
+```
+
+The following is equivalent to using `pairs(t)`:
+```lua
+for k, v in next, t do
+  <loop body>
+end
+```
+
+The above (using `for`) are technically "generators", but still commonly
+referred to as "iterators". A true iterator operates as an independent
+function. True iterators were more popular before introduction of `for`.
+
+```lua
+function all_words(f)
+  for line in io.lines() do
+    for word in string.gmatch(line, "%w+") do
+      f(word)
+    end
+  end
+end
+```
+which can be called like `all_words(print)`.
