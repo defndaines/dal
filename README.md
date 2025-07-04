@@ -1027,3 +1027,73 @@ function all_words(f)
 end
 ```
 which can be called like `all_words(print)`.
+
+## Metatables and Metamethods
+
+Metatables define behavior of an instance and do not have inheritance. Each
+value in Lua has a metatable, but only tables and userdata have individual
+metatables; all other values share a single metatable per type. Metatables for
+non-tables cannot be set from within Lua, only from C or debug library.
+
+`getmetatable(t)` and `setmetatable(t, meta)`
+
+Metamethod names for arithmetic methods: `__add`, `__mul`, `__sub`, `__div`
+(float), `__idiv` (integer), `__unm` (negation), `__mod` (modulo), `__pow`
+(exponentiation)
+
+Metamethod names for bitwise methods: `__band`, `__bor`, `__bxor`, `__bnot`,
+`__shl`, and `__shr`.
+
+Also `__concat`.
+
+Relational metamethod: `__eq`, `__lt`, and `__le` (there are not "greater
+than", they are covered by these.)
+... if two objects have different basic types, `==` always returns false
+without even calling a metamethod.
+
+`__tostring` and `__len` (for `#t` override)
+
+Can hide metatable from users with `__metatable`. This blocks writing.
+```lua
+mt.__metatable = "none of your business"
+```
+
+`__pairs` to implement a traversal function for object.
+
+`__index` to override attempting to access an absent field. This is how you
+set default values.
+```lua
+prototype = {x = 0, y = 0, width = 100, height = 100}
+
+mt.__index = function(_table, key)
+  return prototype[key]
+end
+```
+
+But this can be shortcut by providing a table: `mt.__index = prototype`
+
+Can bypass `__index` by using `rawget(t, i)`.
+
+`__newindex` and `rawset(t, k, v)` are for setting, which allows things like
+read-only tables. (See pg. 195 for implementation.)
+
+```lua
+-- Set default value on any table.
+function set_default(t, d)
+  local mt = {__index = function() return d end}
+  setmetatable(t, mt)
+end
+```
+which can be expensive, with new metatable and function for each table. This
+stores default into a "hidden" field in the table itself.
+```lua
+local mt = {__index = function(t) return t.___ end}
+
+function set_default(t, d)
+  t.___ = d
+  setmetatable(t, mt)
+end
+```
+
+20.2 (pg. 194) has an implementation if you need to track every call to a
+table, using a proxy.
