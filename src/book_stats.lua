@@ -4,11 +4,11 @@ local htmlparser = require("htmlparser")
 htmlparser_looplimit = 10000
 
 local function extract_book_link(html, title)
-  local tree = htmlparser.parse(html)
-  local links = tree:select('a.bookTitle')
+	local tree = htmlparser.parse(html)
+	local links = tree:select("a.bookTitle")
 
 	for _, link in ipairs(links) do
-    -- First node is a <span> containing the name of the book.
+		-- First node is a <span> containing the name of the book.
 		if link.nodes[1]:getcontent():match("^" .. title) then
 			return "https://www.goodreads.com" .. link.attributes["href"]:gsub("?.*", "")
 		end
@@ -16,23 +16,23 @@ local function extract_book_link(html, title)
 end
 
 local function extract_book_details(html)
-  local details = {}
-  local tree = htmlparser.parse(html)
+	local details = {}
+	local tree = htmlparser.parse(html)
 
-  local ratings = tree:select('div.RatingStatistics__rating')
-  details.rating = ratings[1]:getcontent()
+	local ratings = tree:select("div.RatingStatistics__rating")
+	details.rating = ratings[1]:getcontent()
 
-  details.num_ratings = html:match('([%d,]+)%s+ratings')
-  details.num_pages = html:match('(%d+)%s+pages')
+	details.num_ratings = html:match("([%d,]+)%s+ratings")
+	details.num_pages = html:match("(%d+)%s+pages")
 
-  local genres = {}
-  for i, genre in ipairs(tree:select('div.BookPageMetadataSection__genres a')) do
-    genres[i] = genre.nodes[1]:getcontent():lower()
-  end
+	local genres = {}
+	for i, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
+		genres[i] = genre.nodes[1]:getcontent():lower()
+	end
 
-  details.genres = genres
+	details.genres = genres
 
-  return details
+	return details
 end
 
 local html = io.input("book.html"):read("a")

@@ -15,10 +15,10 @@ function Set.new(l)
 end
 
 function Set.union(a, b)
-  -- for a more lucid error when attempting to add non-like types.
-  if getmetatable(a) ~= mt or getmetatable(b) ~= mt then
-    error("attempt to 'add' a set with a non-set value", 2)
-  end
+	-- for a more lucid error when attempting to add non-like types.
+	if getmetatable(a) ~= mt or getmetatable(b) ~= mt then
+		error("attempt to 'add' a set with a non-set value", 2)
+	end
 
 	local result = Set.new({})
 
@@ -57,19 +57,21 @@ mt.__add = Set.union
 mt.__mul = Set.intersection
 
 mt.__le = function(a, b) -- subset
-  for k in pairs(a) do
-    if not b[k] then return false end
-  end
+	for k in pairs(a) do
+		if not b[k] then
+			return false
+		end
+	end
 
-  return true
+	return true
 end
 
 mt.__lt = function(a, b) -- proper subset
-  return a <= b and not (b <= a)
+	return a <= b and not (b <= a)
 end
 
 mt.__eq = function(a, b)
-  return a <= b and b <= a
+	return a <= b and b <= a
 end
 
 mt.__tostring = Set.tostring
