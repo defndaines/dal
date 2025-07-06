@@ -80,14 +80,14 @@ inf
 
 Unbiased rounding, i.e., round toward the closest even number.
 
-```
-function round (x)
-  local f = math.floor(x)
-  if (x == f) or (x % 2.0 == 0.5) then
-    return f
-  else
-    return math.floor(x + 0.5)
-  end
+```lua
+function round(x)
+	local f = math.floor(x)
+	if (x == f) or (x % 2.0 == 0.5) then
+		return f
+	else
+		return math.floor(x + 0.5)
+	end
 end
 ```
 
@@ -249,10 +249,10 @@ green
 ```
 
 A "sequence" is a "list" with no `nil` holes in it.
-```
+```lua
 a = {}
 for i = 1, 10 do
-  a[i] = io.read()
+	a[i] = io.read()
 end
 ```
 
@@ -282,16 +282,16 @@ yourself, typically in a value "n".
 ### Table Traversal
 
 Element order is undefined, including per run.
-```
+```lua
 for k, v in pairs(t) do
-  print(k, v)
+	print(k, v)
 end
 ```
 
 For lists use `ipairs`, which will ensure order, [1,n], which is same as
-```
+```lua
 for k = 1, #t do
-  print(k, t[k])
+	print(k, t[k])
 end
 ```
 
@@ -299,7 +299,7 @@ end
 
 What would be `zip = company?.director?.address?.zipcode` in a language like
 C#, can be done with the following in Lua:
-```
+```lua
 zip = (((company or {}).director or {}).address or {}).zipcode
 ```
 
@@ -331,7 +331,7 @@ So, push is `table.insert(t, val)` and pop is `table.remove(t)`.
 less efficient, but still relatively efficient up to a few hundred items.
 
 Alternative, `move(a, f, e, t)` is equivalent to `insert(t, 1, x)`.
-```
+```lua
 table.move(a, 1, #a, 2)
 a[1] = x
 ```
@@ -371,12 +371,12 @@ will only return one value, regardless of how many values `f` returns.
 ### Variadic Functions
 
 ```
-function add (...)
-  local s = 0
-  for _, v in ipairs({...}) do
-    s = s + v
-  end
-  return s
+function add(...)
+	local s = 0
+	for _, v in ipairs({ ... }) do
+		s = s + v
+	end
+	return s
 end
 
 > add(3, 4, 10, 25, 12)
@@ -392,12 +392,14 @@ Multi-value identity function: `function id (...) return ... end`
 
 If you need to capture variadic nils:
 ```
-function nonils (...)
-  local arg = table.pack(...)
-  for i = 1, arg.n do
-    if arg[i] == nil then return false end
-  end
-  return true
+function nonils(...)
+	local arg = table.pack(...)
+	for i = 1, arg.n do
+		if arg[i] == nil then
+			return false
+		end
+	end
+	return true
 end
 
 > nonils(2, 3, nil)
@@ -419,12 +421,12 @@ b       c
 This is a more performant version of `add` when there are few arguments, since
 it doesn't create new tables.
 ```
-function add (...)
-  local s = 0
-  for i = 1, select("#", ...) do
-    s = s + select(i, ...)
-  end
-  return s
+function add(...)
+	local s = 0
+	for i = 1, select("#", ...) do
+		s = s + select(i, ...)
+	end
+	return s
 end
 
 > add(3, 4, 10, 25, 12)
@@ -446,9 +448,11 @@ For certain calls (like into C, which doesn't accept varags), may need to use
 Lua is properly tail recursive any time a function calls another function
 (with `return`) as its last argument.
 
-```
-function foo (n)
-  if n > 0 then return foo(n - 1) end
+```lua
+function foo(n)
+	if n > 0 then
+		return foo(n - 1)
+	end
 end
 ```
 
@@ -479,14 +483,14 @@ It is shorthand for `io.input():read(args)`
 otherwise.
 
 io.open takes arguments "r", "w", "a", and "b" (for binary)
-```
+```lua
 local f = assert(io.open(filename, mode))
 local t = f:read("a")
 f:close()
 ```
 
 Standard streams exist, too. `io.stdin`, `io.stdout`, and `io.stderr`
-```
+```lua
 io.stderr:write(message)
 ```
 
@@ -519,30 +523,30 @@ if then else also supports `elseif` (there is no switch statement)
 
 `repeat until` like `while`, but doesn't test the condition until loop has
 happened once.
-```
+```lua
 local line
 repeat
-  line = io.read()
+	line = io.read()
 until line ~= ""
 print(line)
 ```
 
 Also, variables from body are visible in the test (unlike some languages)
-```
+```lua
 -- Computes square root using Newton-Raphson method.
 local sqr = x / 2
 repeat
-  sqr = (sqr + x/sqr) / 2
-  local error = match.abs(sqr^2 - x)
-until error < x/10000  -- local error still visible
+	sqr = (sqr + x / sqr) / 2
+	local error = match.abs(sqr ^ 2 - x)
+until error < x / 10000 -- local error still visible
 ```
 
 `for` can be either "numerical" or "generic"
 
 Numerical:
-```
+```lua
 for var = exp1, exp2, exp3 do
-  -- something
+	-- something
 end
 ```
 Is for each value from exp1 to exp2, incrementing by exp3. exp3 is 1 if
@@ -556,13 +560,13 @@ exp2 or exp3)
 Use `break` to exit loop.
 
 If need to save iterator, have to push to previously declared var.
-```
+```lua
 local found
 for i = 1, #a do
-  if ...
-    found = i
-    break
-  end
+	if ... then
+		found = i
+		break
+	end
 end
 ```
 
@@ -580,9 +584,11 @@ Labels are considered void statements, which allows them to appear before and
 `end` and still return the value from the prior statement.
 ```lua
 while some_condition do
-  if some_other_condition then goto continue end
-  local var = something
-  -- more code
+	if some_other_condition then
+		goto continue
+	end
+	local var = something
+	-- more code
   ::continue::
 end
 ```
@@ -597,32 +603,34 @@ All functions are anonymous.
 ### Non-global Functions
 
 These three examples are the same:
-```
+```lua
 Lib = {}
-Lib.foo = function (x, y) return x + y end
-Lib.goo = function (x, y) return x - y end
+Lib.foo = function(x, y) return x + y end
+Lib.goo = function(x, y) return x - y end
 ```
 ... using constructors
-```
+```lua
 Lib = {
-  foo = function (x, y) return x + y end
-  goo = function (x, y) return x - y end
+	foo = function(x, y) return x + y end,
+	goo = function(x, y) return x - y end,
 }
 ```
 ... define into
-```
+```lua
 Lib = {}
 function Lib.foo (x, y) return x + y end
 function Lib.goo (x, y) return x - y end
 ```
 
 To define recursive local functions:
-```
+```lua
 local fact
-fact = function (n)
-  if n == 0 then return 1
-  else return n * fact(n - 1)
-  end
+fact = function(n)
+	if n == 0 then
+		return 1
+	else
+		return n * fact(n - 1)
+	end
 end
 ```
 
@@ -631,11 +639,11 @@ To trampoline (not second `f` should not declare `local`:
 local f
 
 local function g ()
-  <code> f() <code>
+    <code> f() <code>
 end
 
 function f ()
-  <code> g() <code>
+    <code> g() <code>
 end
 ```
 
@@ -643,24 +651,24 @@ end
 
 Inside this function, `grades` is neither local or global, but `non-local
 variable`, also called `upvalues` in some sources.
-```
-names = {"Peter", "Paul", "Mary"}
-grades = {Mary = 10, Paul = 7, Peter = 8}
-function sort_by_grade (names, grades)
-  table.sort(names, function (n1, n2)
-    return grades[n1] > grades[n2]
-  end)
+```lua
+names = { "Peter", "Paul", "Mary" }
+grades = { Mary = 10, Paul = 7, Peter = 8 }
+function sort_by_grade(names, grades)
+	table.sort(names, function(n1, n2)
+		return grades[n1] > grades[n2]
+	end)
 end
 ```
 
 Functions can escape the original scope of their variables:
-```
-function new_counter ()
-  local count = 0
-  return function ()
-    count = count + 1
-    return count
-  end
+```lua
+function new_counter()
+	local count = 0
+	return function()
+		count = count + 1
+		return count
+	end
 end
 
 c1 = new_counter()
@@ -694,7 +702,7 @@ stdin:1: malformed pattern (missing ']')
 
 Like `find`, but returns the matched bits.
 
-```
+```lua
 date = "Today is 2025-06-09"
 d = string.match(date, "%d+-%d+-%d+")
 print(d) -- 2025-06-09
@@ -711,11 +719,11 @@ Third argument can be a function or table!
 #### `string.gmatch`
 
 Returns function that iterates over all occurrences of a pattern.
-```
+```lua
 s = "some string"
 words = {}
 for w in string.gmatch(s, "%a+") do
-  words[#words + 1] = w
+	words[#words + 1] = w
 end
 ```
 
@@ -740,13 +748,13 @@ Magic characters: ( ) . % + - * ? [ ] ^ $
     `-` is 0 or more lazy repetitions
 
 `%bxy` matches balanced strings.
-```
+```lua
 s = "a (enclosed (in) parentheses) line"
 print((string.gsub(s, "%b()", ""))) --> a  line
 ```
 
 `%f[char-set]` represents a frontier pattern.
-```
+```lua
 s = "the anthem is the theme"
 print((string.gsub(s, "%f[%w]the%f[%W]", "one")))  --> one anthem is one theme
 ```
@@ -764,7 +772,7 @@ Can use `%` and a number to reference prior matches. %0 is the whole match.
 s = [[then he said: "it's all right"!]]
 q, quoted_part = string.match(s, "([\"'])(.-)%1")
 print(q) --> "
-print(quoted_part)  --> it's all right
+print(quoted_part) --> it's all right
 ```
 
 ```
@@ -774,23 +782,24 @@ h-he-el-ll-lo-o L-Lu-ua-a!
 ehll ouLa
 ```
 
-```
-function trim (s)
-  return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
+```lua
+function trim(s)
+	return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
 end
 ```
 
 ### Replacements
 
 Can pass tables or functions. If returns `nil`, then does not replace.
-```
-function expand (s)
-  return (string.gsub(s, "$(%w+)", _G))
+```lua
+function expand(s)
+	return (string.gsub(s, "$(%w+)", _G))
 end
 
-name = "Lua"; status = "great"
-print(expand("$name is a $status, isn‘t it"))  --> Lua is a great, isn‘t it
-print(expand("$othername is $status, isn’t it"))  --> $othername is great, isn’t it
+name = "Lua"
+status = "great"
+print(expand("$name is a $status, isn‘t it")) --> Lua is a great, isn‘t it
+print(expand("$othername is $status, isn’t it")) --> $othername is great, isn’t it
 ```
 (`_G` is all global variables.)
 
@@ -804,7 +813,7 @@ print(expand("$othername is $status, isn’t it"))  --> $othername is great, isn
 
 Either number of seconds since epoch (1970 UTC), or a table that does NOT
 include timezone, like:
-```
+```lua
 {year = 1998, month = 9, day = 16, yday = 259, wday = 4, hour = 23, min = 48,
 sec = 10, isdst = false}
 ```
@@ -927,10 +936,10 @@ Precompiled code files won't necessarily be smaller, but will run faster.
 incorrect argument.
 ```lua
 function foo(str)
-  if type(str) ~= "string" then
-    error("string expected", 2)
-  end
-  -- code
+	if type(str) ~= "string" then
+		error("string expected", 2)
+	end
+	-- code
 end
 ```
 
@@ -970,20 +979,23 @@ same directory.
 Use a factory that returns a function.
 ```lua
 function values(t)
-  local i = 0
-  return function() i = i + 1; return t[i] end
+	local i = 0
+	return function()
+		i = i + 1
+		return t[i]
+	end
 end
 
-t = {10, 20, 30}
+t = { 10, 20, 30 }
 for element in values(t) do
-  print(element)
+	print(element)
 end
 ```
 
 Generic `for`:
 ```
 for <var-list> in <exp-list> do
-  <body>
+	<body>
 end
 ```
 The first variable in the list is the "control variable". When it becomes
@@ -996,20 +1008,20 @@ variables are returned, rest are dropped.
 Equivalent to generic `for`:
 ```lua
 do
-  local _f, _s, _var = <explist>
-  while true do
-    local var_1, ..., var_n = _f(_s, _var)
-    _var = var_1
-    if _var == nil then break end
-    <block>
-  end
+    local _f, _s, _var = <explist>
+    while true do
+        local var_1, ..., var_n = _f(_s, _var)
+        _var = var_1
+        if _var == nil then break end
+        <block>
+    end
 end
 ```
 
 The following is equivalent to using `pairs(t)`:
 ```lua
 for k, v in next, t do
-  <loop body>
+    <loop body>
 end
 ```
 
@@ -1019,11 +1031,11 @@ function. True iterators were more popular before introduction of `for`.
 
 ```lua
 function all_words(f)
-  for line in io.lines() do
-    for word in string.gmatch(line, "%w+") do
-      f(word)
-    end
-  end
+	for line in io.lines() do
+		for word in string.gmatch(line, "%w+") do
+			f(word)
+		end
+	end
 end
 ```
 which can be called like `all_words(print)`.
@@ -1063,10 +1075,10 @@ mt.__metatable = "none of your business"
 `__index` to override attempting to access an absent field. This is how you
 set default values.
 ```lua
-prototype = {x = 0, y = 0, width = 100, height = 100}
+prototype = { x = 0, y = 0, width = 100, height = 100 }
 
 mt.__index = function(_table, key)
-  return prototype[key]
+	return prototype[key]
 end
 ```
 
@@ -1080,20 +1092,90 @@ read-only tables. (See pg. 195 for implementation.)
 ```lua
 -- Set default value on any table.
 function set_default(t, d)
-  local mt = {__index = function() return d end}
-  setmetatable(t, mt)
+	local mt = {
+		__index = function()
+			return d
+		end,
+	}
+	setmetatable(t, mt)
 end
 ```
 which can be expensive, with new metatable and function for each table. This
 stores default into a "hidden" field in the table itself.
 ```lua
-local mt = {__index = function(t) return t.___ end}
+local mt = {
+	__index = function(t)
+		return t.___
+	end,
+}
 
 function set_default(t, d)
-  t.___ = d
-  setmetatable(t, mt)
+	t.___ = d
+	setmetatable(t, mt)
 end
 ```
 
 20.2 (pg. 194) has an implementation if you need to track every call to a
 table, using a proxy.
+
+## Object-Oriented Programming
+
+`:` has the effect of adding an extra (hidden) argument to a call. You can
+define using `.` and call with `:` and vice versa. These are equivalent:
+```lua
+function Account.withdraw(self, v)
+	self.balance = self.balance - v
+end
+```
+```lua
+function Account:withdraw(v)
+	self.balance = self.balance - v
+end
+```
+
+Lua is a prototype language (like Self and JS), so inheritance is via use of
+prototypes, e.g., `setmetatable(A, {__index = B})`.
+
+```lua
+function Account:new(o)
+	o = o or {}
+	self.__index = self -- self is Account
+	setmetatable(o, self)
+	return o
+end
+```
+
+For multiple inheritance, have to use a function for `__index` which calls
+each parent prototype.
+
+A common Lua practice is to mark private names with a trailing underscore.
+
+Another way to force privacy it to separate state and operations (interface),
+burying the state inside the other. Note that `self` doesn’t get passed as a
+parameter.
+```lua
+function new_account(initial_balance)
+	local self = { balance = initial_balance }
+
+	local withdraw = function(v)
+		self.balance = self.balance - v
+	end
+
+	local deposit = function(v)
+		self.balance = self.balance + v
+	end
+
+	local get_balance = function()
+		return self.balance
+	end
+
+	return {
+		withdraw = withdraw,
+		deposit = deposit,
+		get_balance = get_balance,
+	}
+end
+```
+
+There is also a single-method approach and a dual-representation approach. See
+pg. 206–208 for details.
