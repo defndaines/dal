@@ -510,8 +510,8 @@ command. This affects behavior of `local`.
 
 `do`-`end` blocks can introduce scope, including when interactive.
 
-Use `strict.lua` module to error on attempting to assign to global variables
-that haven't been defined.
+Use `require("strict.lua")` module to error on attempting to assign to global
+variables that haven't been defined.
 
 It is faster to use `local` variables, so prefer over global.
 
@@ -1179,3 +1179,32 @@ end
 
 There is also a single-method approach and a dual-representation approach. See
 pg. 206–208 for details.
+
+## The Environment
+
+Global vars are stored in `_G`. But this is a table like any other.
+
+"Free name" is a name that is not bound to an explicit declaration. The
+compiler converts any use of a free name `x` to `_ENV.x`. `_ENV` is created as
+a local variable by the compiler outside any chunk that it compiles.
+
+Usually, `_G` and `_ENV` point to the same table. `_ENV` always refers to the
+current environment; `_G` will refer to the global environment unless changes
+or not visible.
+
+Can take advantage of this behavior in modules:
+```lua
+local M = {}
+_ENV = M
+
+function add(c1, c2)
+	return new(c1.r + c2.r, c1.i + c2.i)
+end
+```
+Or, preferable block from writing to global at all with
+```lua
+local M = {}
+-- import needed functions.
+local sqrt = math.sqrt
+_ENV = nil
+```
