@@ -419,7 +419,7 @@ b       c
 ```
 
 This is a more performant version of `add` when there are few arguments, since
-it doesn't create new tables.
+it doesn’t create new tables.
 ```
 function add(...)
 	local s = 0
@@ -435,7 +435,7 @@ end
 
 ### Unpack
 
-For certain calls (like into C, which doesn't accept varags), may need to use
+For certain calls (like into C, which doesn’t accept varags), may need to use
 `unpack`.
 
 ```
@@ -511,7 +511,7 @@ command. This affects behavior of `local`.
 `do`-`end` blocks can introduce scope, including when interactive.
 
 Use `require("strict.lua")` module to error on attempting to assign to global
-variables that haven't been defined.
+variables that haven’t been defined.
 
 It is faster to use `local` variables, so prefer over global.
 
@@ -521,7 +521,7 @@ if then else also supports `elseif` (there is no switch statement)
 
 `while`
 
-`repeat until` like `while`, but doesn't test the condition until loop has
+`repeat until` like `while`, but doesn’t test the condition until loop has
 happened once.
 ```lua
 local line
@@ -683,7 +683,7 @@ Lua allows monkey-patching. This is also used to allow sandboxing.
 
 ## Pattern Matching
 
-Neither POSIX nor Perl regex are used in Lua (because they'd be too large).
+Neither POSIX nor Perl regex are used in Lua (because they’d be too large).
 
 Four functions in `string` library: `find`, `gsub`, `match`, and `gmatch`.
 
@@ -927,7 +927,7 @@ These are equivalent: `loadfile(filename)` and `load(io.lines(filename, "*L"))`
 
 "binary chunk" is a precompiled file (e.g., with `luac`)
 Precompile with `luac -o prog.lc prog.lua`
-Precompiled code files won't necessarily be smaller, but will run faster.
+Precompiled code files won’t necessarily be smaller, but will run faster.
 
 ### Errors
 
@@ -1208,3 +1208,129 @@ local M = {}
 local sqrt = math.sqrt
 _ENV = nil
 ```
+
+## Garbage
+
+Weak tables are the mechanism to tell Lua that a reference should not prevent
+garbage collection. Created with `__mode` of "k", "v", or "kv" to indicate
+what is weak. `t = {__mode = "k"}` has weak keys. Only objects are removed as
+weak; numbers and booleans are not collected on their own (e.g., weak keys
+would not remove, weak values could be).
+
+`collectgarbage()` to do a full collection. It takes a number of optional
+arguments (pg. 233), mostly for when you’ve encountered a more serious issue
+with a long-running program..
+
+Using weak tables to enable memorization:
+```lua
+local results = {}
+setmetatable(results, {__mode = "kv"})
+
+function mem_load_string(s)
+	local result = results[s]
+
+	if result == nil then
+		result = assert(load(s))
+		results[s] = result
+	end
+
+	return result
+end
+```
+
+Using dual representation to provide default values for a table. This solution
+is better if few tables share common defaults.
+```lua
+local defaults = {}
+setmetatable(defaults, { __mode = "k" })
+local mt = {
+	__index = function(t)
+		return defaults[t]
+	end,
+}
+
+function set_default(t, d)
+	defaults[t] = d
+	setmetatable(t, mt)
+end
+```
+
+A solution that using distinct metatables. This one is better if you have
+thousands of tables with a few distinct values.
+```lua
+local metas = {}
+setmetatable(metas, { __mode = "v" })
+
+function set_default(t, d)
+	local mt = metas[d]
+
+	if mt == nil then
+		mt = {
+			__index = function()
+				return d
+			end,
+		}
+		metas[d] = mt
+	end
+
+	setmetatable(t, mt)
+end
+```
+
+An "ephemeron table" has weak keys but values that refer back to the keys.
+These get garbage collected.
+```lua
+do
+	local mem = {}
+	setmetatable(mem, { __mode = "k" })
+
+	function factory(o)
+		local result = mem[o]
+
+		if not result then
+			result = function()
+				return o
+			end
+			mem[o] = result
+		end
+
+		return result
+	end
+end
+```
+
+`__gc` is used to define a "finalizer", called on the object when garbage
+collection happens. Finalization happens in reverse order that they were
+marked for finalization. Finalization "resurrects" objects, to be sure that
+this is transient and that finalization methods do not create permanent
+references to the object being collected.
+
+May need to set finalizer for nested object.
+```lua
+o = { x = "hi" }
+mt = { __gc = true }
+setmetatable(o, mt)
+
+mt.__gc = function(o)
+	print(o.x)
+end
+
+o = nil
+collectgarbage()
+```
+
+Can use finalizers to create an "at exit" function. (This works because
+globals are never garbage collected during runtime.)
+```lua
+local t = {
+	__gc = function()
+		print("finished Lua program")
+	end,
+}
+
+setmetatable(t, t)
+_G["*AA*"] = t
+```
+
+At each collection cycle, the collector clears values in weak tables before
+calling finalizers, and clears keys afterward.
