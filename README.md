@@ -1334,3 +1334,41 @@ _G["*AA*"] = t
 
 At each collection cycle, the collector clears values in weak tables before
 calling finalizers, and clears keys afterward.
+
+## Coroutines
+
+Lua has “asymmetric coroutines”, meaning the function to suspend and resume
+are different.
+
+`coroutine.create(fn)` to create one. Can be in one of four states: suspended,
+running, normal, and dead.
+
+Use `coroutine.resume(co)` to (re)start execution. `coroutine.resume(co)`
+runs in protected mode, returning any errors to the caller. Can pass
+additional arguments, which will be passed into the function.
+
+```
+> co = coroutine.create(function() print("hi") end)
+> type(co)
+thread
+> coroutine.status(co)
+suspended
+> coroutine.resume(co)
+hi
+true
+> coroutine.status(co)
+dead
+```
+
+`coroutine.yield()` can be called from within a coroutine to allow the caller
+to decide the next step for execution. Can pass arguments, which will be
+returned to the caller.
+
+Common to use coroutines for iterators. See
+[permutations.lua](src/permutations.lua) for an example. Pattern is so common
+that API provides `coroutine.wrap(fn)`. `wrap` raises an error if encountered,
+instead of returning it as first result like other functions in the module.
+
+See [async-lib.lua](src/async-lib.lua), [reverse.lua](src/reverse.lua), and
+[sync-async-reverse.lua](src/sync-async-reverse.lua) for event processing
+examples.
