@@ -144,6 +144,12 @@ UTF:
 4095
 ```
 
+Repeat a letter:
+```
+> ("#"):rep(20)
+####################
+```
+
 ### Multiline
 
 ```
@@ -1372,3 +1378,30 @@ instead of returning it as first result like other functions in the module.
 See [async-lib.lua](src/async-lib.lua), [reverse.lua](src/reverse.lua), and
 [sync-async-reverse.lua](src/sync-async-reverse.lua) for event processing
 examples.
+
+## Reflection
+
+`debug` modules breaks a lot of basic Lua assumptions, isn’t performant, and
+should not be used in regular programs.
+
+`debug.getinfo(arg)`:
+- function arg returns table of information about a function.
+- number arg is stack level, returns function info up call stack. `0` if for
+  `getinfo` itself.
+- optional second arg to limit which fields to return. (pg. 253)
+
+`debug.traceback()` returns stack trace with info.
+
+`debug.getlocal(level, index)` and `debug.setlocal(level, index, new_value)`
+can be used to inspect local variables. Plenty of other options for querying
+values, including globals and inside coroutines.
+
+`debug.sethook(fn, mask, opt_count)` can add hooks to run on “call”, “return”,
+“line”, or “count”. Use "c", "r", or "l" for mask. Call with no arguments to
+turn off. Common to pass `debug.debug` as the function.
+
+Debug can be used for profiling, but for timing questions, better to use C
+library as overhead of Lua will mess with results.
+
+Can also be used for sandboxing, such as limited call count or memory
+consumption.

@@ -1,6 +1,7 @@
 local https = require("ssl.https")
 local ltn12 = require("ltn12")
 local htmlparser = require("htmlparser")
+htmlparser_looplimit = 10000
 
 local function urlencode(str)
 	return str:gsub("([^%w _%%%-%.~])", function(c)
@@ -29,10 +30,12 @@ end
 local function extract_book_link(html)
 	local tree = htmlparser.parse(html)
 	local links = tree:select("a.bookTitle")
+
 	if #links > 0 then
 		local href = links[1]:attributes().href
 		return "https://www.goodreads.com" .. href
 	end
+
 	return nil
 end
 

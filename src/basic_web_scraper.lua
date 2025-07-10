@@ -47,6 +47,8 @@ local function extract_book_link(html, title)
 			return "https://www.goodreads.com" .. link.attributes["href"]:gsub("?.*", "")
 		end
 	end
+
+	return nil
 end
 
 -- Extract details from a book page
@@ -67,18 +69,38 @@ end
 
 -- Main function
 local function get_book_info(title, author)
+	local query = urlencode(title .. " " .. author)
+	local search_url = "https://www.goodreads.com/search?q=" .. query
+
+	local search_html, err = fetch_url(search_url)
+	if not search_html then
+		return nil, "Search fetch error: " .. err
+	end
+
+	local book_url = extract_book_link(search_html, title)
+	if not book_url then
+		return nil, "Book link not found."
+	end
+
+	local book_html, err = fetch_url(book_url)
+	if not book_html then
+		return nil, "Book page fetch error: " .. err
+	end
+
 	local details = {}
-	local tree = htmlparser.parse(html)
+	local tree = htmlparser.parse(book_html)
 
 	local ratings = tree:select("div.RatingStatistics__rating")
 	print(#ratings)
-	details.rating = ratings[1]:getcontent()
+	if #ratings > 0 then
+		details.rating = ratings[1]:getcontent()
+	end
 
-	-- details.rating = html:match('itemprop="ratingValue"%s*>%s*(.-)%s*<')
-	details.num_ratings = html:match("([%d,]+)%s+ratings")
-	details.num_pages = html:match("(%d+)%s+pages")
+	-- details.rating = tree:match('itemprop="ratingValue"%s*>%s*(.-)%s*<')
+	details.num_ratings = tree:match("([%d,]+)%s+ratings")
+	details.num_pages = tree:match("(%d+)%s+pages")
 
-	genres = {}
+	local genres = {}
 	for i, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		genres[i] = genre.nodes[1]:getcontent():lower()
 	end
@@ -108,6 +130,7 @@ local author = "Patrick Rothfuss"
 -- local author = "Virginia Woolf"
 
 local info, err = get_book_info(title, author)
+
 if info then
 	print("Rating: " .. (info.rating or "N/A"))
 	print("Number of Ratings: " .. (info.num_ratings or "N/A"))
