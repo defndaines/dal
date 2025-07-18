@@ -8,9 +8,6 @@ function parser.book_link(html, title, author)
 	local books = tree:select("table tr")
 
 	for _, book in ipairs(books) do
-		-- if link.nodes[1]:getcontent():match("^" .. title) then
-		--     return "https://www.goodreads.com" .. link.attributes["href"]:gsub("?.*", "")
-		-- end
 		local book_title = book:select("a.bookTitle")
 
 		if book_title[1].nodes[1]:getcontent():match("^" .. title) then
