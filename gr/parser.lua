@@ -53,6 +53,7 @@ local ignore_genres = {
 	["realistic fiction"] = true,
 	["school"] = true,
 	["science fiction fantasy"] = true,
+	["sci-fi fantasy"] = true,
 	["world history"] = true,
 }
 
@@ -118,7 +119,7 @@ function parser.book_details(html)
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
-		g = g:gsub("science fiction", "sci-fi"):gsub("young adult", "YA"):gsub("lgbt", "LGBT")
+		g = g:gsub("science fiction", "sci-fi"):gsub("young adult", "YA"):gsub("lgbt", "LGBT"):gsub("world war ii", "WWII")
 
 		if not ignore_genres[g] then
 			table.insert(genres, (g:gsub("%s+fiction", "")))

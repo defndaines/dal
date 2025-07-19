@@ -10,6 +10,7 @@
 local https = require("ssl.https")
 local ltn12 = require("ltn12")
 local parser = require("parser")
+local data = require("data")
 
 -- Simple URL encoding function
 local function urlencode(str)
@@ -77,26 +78,31 @@ local function get_book_info(title, author)
 	return details
 end
 
+local books = data.parse("../..//kiroku/data/audiobooks.txt")
+local book = books[3]
+
 -- local title = ""
 -- local author = ""
 
-local title = "Bird Milk & Mosquito Bones: A Memoir"
-local author = "Priyanka Mattoo"
-
-local info, err = get_book_info(title, author)
+local info, err = get_book_info(book.title, book.author)
 
 if info then
 	print("Title: " .. (info.title or "N/A"))
 	print("Author: " .. (info.author or "N/A"))
-	print("ID: " .. (info.id or "N/A"))
-	print("Rating: " .. (info.rating or "N/A"))
-	print("Number of Ratings: " .. (info.num_ratings or "N/A"))
-	print("Pages: " .. (info.num_pages or "N/A"))
 	print("Year: " .. (info.year or "N/A"))
-	print("Published: " .. (info.published or "N/A"))
+	print("Rating: " .. (info.rating or "N/A"))
 	print("Genres: " .. table.concat(info.genres, ", "))
-	print("Series: " .. (info.series or "N/A"))
-	print("Volume: " .. (info.volume or "N/A"))
+	print("Tags: " .. table.concat(book.tags, ", "))
+	print("Pages: " .. (info.num_pages or "N/A"))
+	print("Hours: " .. (book.hours or "N/A"))
+	print("ID: " .. (info.id or "N/A"))
+	print("Number of Ratings: " .. (info.num_ratings or "N/A"))
+	print("Published: " .. (info.published or "N/A"))
+	if info.series then
+		print("Series: ", info.series:lower():gsub("%s", "-") .. "-" .. info.volume)
+	end
+	-- print("Series: " .. (info.series or "N/A"))
+	-- print("Volume: " .. (info.volume or "N/A"))
 	print("URL: " .. info.url)
 else
 	print("Error: " .. err)
