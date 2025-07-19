@@ -33,6 +33,7 @@ local ignore_genres = {
 	["adult"] = true,
 	["africa"] = true,
 	["american history"] = true,
+	["american"] = true,
 	["ancient history"] = true,
 	["ancient"] = true,
 	["asia"] = true,
@@ -40,20 +41,33 @@ local ignore_genres = {
 	["audiobook"] = true,
 	["biography memoir"] = true,
 	["book club"] = true,
+	["british literature"] = true,
 	["china"] = true,
+	["dark fantasy"] = true,
 	["epic fantasy"] = true,
+	["european history"] = true,
 	["fiction"] = true,
+	["french literature"] = true,
+	["german literature"] = true,
 	["high fantasy"] = true,
 	["india"] = true,
 	["indian literature"] = true,
+	["japanese literature"] = true,
 	["literature"] = true,
 	["magic"] = true,
 	["mystery thriller"] = true,
+	["new weird"] = true,
 	["novels"] = true,
 	["realistic fiction"] = true,
+	["romanian literature"] = true,
+	["scandinavian literature"] = true,
 	["school"] = true,
-	["science fiction fantasy"] = true,
 	["sci-fi fantasy"] = true,
+	["science fiction fantasy"] = true,
+	["spanish literature"] = true,
+	["swedish literature"] = true,
+	["turkish literature"] = true,
+	["turkish"] = true,
 	["world history"] = true,
 }
 
@@ -119,7 +133,12 @@ function parser.book_details(html)
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
-		g = g:gsub("science fiction", "sci-fi"):gsub("young adult", "YA"):gsub("lgbt", "LGBT"):gsub("world war ii", "WWII")
+		g = g:gsub("science fiction", "sci-fi")
+			:gsub("young adult", "YA")
+			:gsub("lgbt", "LGBT")
+			:gsub("world war ii", "WWII")
+			:gsub("world war i", "WWI")
+			:gsub("&#x27;", "’")
 
 		if not ignore_genres[g] then
 			table.insert(genres, (g:gsub("%s+fiction", "")))

@@ -79,31 +79,22 @@ local function get_book_info(title, author)
 end
 
 local books = data.parse("../..//kiroku/data/audiobooks.txt")
-local book = books[3]
 
--- local title = ""
--- local author = ""
+local fout = io.open("audio.md", "a+")
+local info, err
 
-local info, err = get_book_info(book.title, book.author)
+for _, book in pairs(books) do
+	print(book.title)
 
-if info then
-	print("Title: " .. (info.title or "N/A"))
-	print("Author: " .. (info.author or "N/A"))
-	print("Year: " .. (info.year or "N/A"))
-	print("Rating: " .. (info.rating or "N/A"))
-	print("Genres: " .. table.concat(info.genres, ", "))
-	print("Tags: " .. table.concat(book.tags, ", "))
-	print("Pages: " .. (info.num_pages or "N/A"))
-	print("Hours: " .. (book.hours or "N/A"))
-	print("ID: " .. (info.id or "N/A"))
-	print("Number of Ratings: " .. (info.num_ratings or "N/A"))
-	print("Published: " .. (info.published or "N/A"))
-	if info.series then
-		print("Series: ", info.series:lower():gsub("%s", "-") .. "-" .. info.volume)
+	info, err = get_book_info(book.title, book.author)
+
+	if info then
+		fout:write(data.output(book, info) .. "\n")
+	else
+		print("Error: " .. err)
 	end
-	-- print("Series: " .. (info.series or "N/A"))
-	-- print("Volume: " .. (info.volume or "N/A"))
-	print("URL: " .. info.url)
-else
-	print("Error: " .. err)
+
+	os.execute("sleep 1")
 end
+
+fout:close()

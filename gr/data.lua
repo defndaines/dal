@@ -42,4 +42,38 @@ print("hours: ", book.hours)
 print("tags: ", table.concat(book.tags, ", "))
 ]]
 
+function data.output(book, info)
+	local order = {}
+	order[1] = info.title
+	order[2] = info.author
+	order[3] = info.year
+	order[4] = info.num_pages or ""
+	order[5] = book.hours
+
+	local tags = info.genres
+	local g_set = {}
+
+	for _, genre in ipairs(info.genres) do
+		g_set[genre] = true
+	end
+
+	if info.series then
+		tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
+	end
+
+	for _, tag in ipairs(book.tags) do
+		if not g_set[tag] then
+			tags[#tags + 1] = tag
+		end
+	end
+
+	order[6] = table.concat(tags, ", ")
+	order[7] = info.rating
+	order[8] = info.num_ratings or ""
+	order[9] = info.id or ""
+	order[10] = info.url
+
+	return "| " .. table.concat(order, " | ") .. " | "
+end
+
 return data
