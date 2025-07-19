@@ -48,9 +48,10 @@ local function get_book_info(title, author)
 		return nil, "Search fetch error: " .. err
 	end
 
-	local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
-	file:write(html)
-	file:close()
+	-- print(search_url)
+	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
+	-- file:write(html)
+	-- file:close()
 
 	local book_url = parser.book_link(html, title, author)
 
@@ -64,6 +65,10 @@ local function get_book_info(title, author)
 		return nil, "Book page fetch error: " .. err
 	end
 
+	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
+	-- file:write(html)
+	-- file:close()
+
 	local details = parser.book_details(html)
 	details.url = book_url
 	details.title = title
@@ -72,29 +77,18 @@ local function get_book_info(title, author)
 	return details
 end
 
--- Example usage
--- local title = "The Name of the Wind"
--- local author = "Patrick Rothfuss"
+-- local title = ""
+-- local author = ""
 
--- WTF?!? The search on this fails to parse the first result, which is the book link.
--- local title = "To the Lighthouse"
--- local author = "Virginia Woolf"
-
--- TODO: This doesn't correctly get https://www.goodreads.com/book/show/7235533-the-way-of-kings
--- local title = "The Way of Kings"
--- local author = "Brandon Sanderson"
-
--- TODO: AGAIN! Failing to find first (and only) result.
--- local title = "Waste Tide"
--- local author = "Chen Qiufan"
-
--- TODO: AGAIN! Failing to find first (and only) result.
-local title = "Give Me Some Truth"
-local author = "Eric Gansworth"
+local title = "Bird Milk & Mosquito Bones: A Memoir"
+local author = "Priyanka Mattoo"
 
 local info, err = get_book_info(title, author)
 
 if info then
+	print("Title: " .. (info.title or "N/A"))
+	print("Author: " .. (info.author or "N/A"))
+	print("ID: " .. (info.id or "N/A"))
 	print("Rating: " .. (info.rating or "N/A"))
 	print("Number of Ratings: " .. (info.num_ratings or "N/A"))
 	print("Pages: " .. (info.num_pages or "N/A"))

@@ -17,9 +17,6 @@ assert(
 
 -- More Complicated Book Link
 
--- TODO: Currently Fails. See https://github.com/msva/lua-htmlparser/issues/67
-
---[[
 local file = io.open("spec/lighthouse.html", "r")
 local search_html = file:read("*a")
 file:close()
@@ -29,10 +26,56 @@ local author = "Virginia Woolf"
 local book_link = parser.book_link(search_html, title, author)
 
 assert(
-	"https://www.goodreads.com/book/show/200822229-to-the-lighthouse" == book_link,
+	-- "https://www.goodreads.com/book/show/59716.To_the_Lighthouse" == book_link,
+	"https://www.goodreads.com/book/show/23632005-to-the-lighthouse" == book_link,
 	"Incorrect book link: " .. book_link
 )
-]]
+
+-- Author Name Has Hyphen
+
+local file = io.open("spec/City-of-Ash-and-Red.html", "r")
+local search_html = file:read("*a")
+file:close()
+
+local title = "City of Ash and Red"
+local author = "Hye-Young Pyun"
+local book_link = parser.book_link(search_html, title, author)
+
+assert(
+	"https://www.goodreads.com/book/show/39331853-city-of-ash-and-red" == book_link,
+	"Incorrect book link: " .. book_link
+)
+
+-- Author Name Has Extra Spaces
+
+local file = io.open("spec/Remember-You-Will-Die.html", "r")
+local search_html = file:read("*a")
+file:close()
+
+local title = "Remember You Will Die"
+local author = "Eden Robins"
+local book_link = parser.book_link(search_html, title, author)
+
+assert(
+	"https://www.goodreads.com/book/show/203751806-remember-you-will-die" == book_link,
+	"Incorrect book link: " .. book_link
+)
+
+-- When the Search Title Is WaCkY!
+--   -> [(Girl in a Band)] [Author: Kim Gordon] published on (February, 2015)
+
+local file = io.open("spec/Girl-in-a-Band.html", "r")
+local search_html = file:read("*a")
+file:close()
+
+local title = "Girl in a Band"
+local author = "Kim Gordon"
+local book_link = parser.book_link(search_html, title, author)
+
+assert(
+	"https://www.goodreads.com/book/show/159719031-girl-in-a-band-author" == book_link,
+	"Incorrect book link: " .. book_link
+)
 
 -- Test Extracting Book Details
 file = io.open("spec/book.html", "r")
@@ -43,7 +86,7 @@ local details = parser.book_details(book_html)
 
 assert(details.id == "186074", "id was '" .. details.id .. "'")
 assert(details.rating == "4.52", "rating was '" .. details.rating .. "'")
-assert(details.num_ratings == "1049174", "num_ratings was '" .. details.num_ratings .. "'")
+assert(details.num_ratings == "1049625", "num_ratings was '" .. details.num_ratings .. "'")
 assert(details.num_pages == "662", "num_pages was '" .. details.num_pages .. "'")
 assert(details.year == "2007", "year was '" .. details.year .. "'")
 assert(details.published == "March 27, 2007", "published was '" .. details.published .. "'")

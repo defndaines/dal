@@ -3,53 +3,80 @@ local parser = {}
 local htmlparser = require("htmlparser")
 
 function parser.book_link(html, title, author)
-	local tree = htmlparser.parse(html, 10000)
+	-- Bug workaround: https://github.com/msva/lua-htmlparser/issues/67
+	html = html:gsub("<script.-</script>", "")
 
+	local tree = htmlparser.parse(html, 10000)
 	local books = tree:select("table tr")
+
+	local link
+	local highest = 0
 
 	for _, book in ipairs(books) do
 		local book_title = book:select("a.bookTitle")
 
-		if book_title[1].nodes[1]:getcontent():match("^" .. title) then
-			print(book_title[1].nodes[1]:getcontent())
-			local aut = book:select("a.authorName")
-			if aut[1].nodes[1]:getcontent():match(author) then
-				print((book_title[1].attributes["href"]:gsub("?.*", "")))
-				return "https://www.goodreads.com" .. book_title[1].attributes["href"]:gsub("?.*", "")
-			end
+		local rating = book:select("div span span")[1]:getcontent()
+		local count = rating:match("([%d,]+) ratings?"):gsub(",", "")
+
+		if tonumber(count) > highest then
+			highest = tonumber(count)
+			link = "https://www.goodreads.com" .. book_title[1].attributes["href"]:gsub("?.*", "")
 		end
 	end
 
-	local links = tree:select("a.bookTitle")
-
-	for _, link in ipairs(links) do
-		--[[ First node is a <span> containing the name of the book.
-		       Goodreads has a lot of junk like "Study Guide" and "Summary of"
-		       "books" that are often ahead of the obvious book being searched for.]]
-		if link.nodes[1]:getcontent():match("^" .. title) then
-			return "https://www.goodreads.com" .. link.attributes["href"]:gsub("?.*", "")
-		end
-		-- TODO: Have a fallback if that doesn't capture the link correctly.
-	end
-
-	return nil
+	return link
 end
 
 local ignore_genres = {
+	["20th century"] = true,
+	["YA fantasy"] = true,
 	["adult"] = true,
+	["africa"] = true,
+	["american history"] = true,
+	["ancient history"] = true,
+	["ancient"] = true,
+	["asia"] = true,
+	["asian literature"] = true,
 	["audiobook"] = true,
+	["biography memoir"] = true,
+	["book club"] = true,
+	["china"] = true,
 	["epic fantasy"] = true,
 	["fiction"] = true,
 	["high fantasy"] = true,
+	["india"] = true,
+	["indian literature"] = true,
+	["literature"] = true,
 	["magic"] = true,
+	["mystery thriller"] = true,
+	["novels"] = true,
+	["realistic fiction"] = true,
+	["school"] = true,
 	["science fiction fantasy"] = true,
+	["world history"] = true,
 }
+
+local function uniq(list)
+	local hash = {}
+
+	for _, v in ipairs(list) do
+		hash[v] = true
+	end
+
+	local deduped = {}
+
+	for k, _ in pairs(hash) do
+		deduped[#deduped + 1] = k
+	end
+
+	return deduped
+end
 
 function parser.book_details(html)
 	local details = {}
 
 	details.id = html:match('{\\"legacyId\\":\\"(%d+)\\"}')
-	-- print("id: ", details.id)
+	html = html:gsub("<script.-</script>", "")
 
 	local tree = htmlparser.parse(html, 10000)
 
@@ -91,13 +118,14 @@ function parser.book_details(html)
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
+		g = g:gsub("science fiction", "sci-fi"):gsub("young adult", "YA"):gsub("lgbt", "LGBT")
 
 		if not ignore_genres[g] then
-			table.insert(genres, g)
+			table.insert(genres, (g:gsub("%s+fiction", "")))
 		end
 	end
 
-	details.genres = genres
+	details.genres = uniq(genres)
 	-- print("genres: ", table.concat(genres, ", "))
 
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
