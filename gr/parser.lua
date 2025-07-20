@@ -32,6 +32,7 @@ local ignore_genres = {
 	["YA fantasy"] = true,
 	["adult"] = true,
 	["africa"] = true,
+	["aliens"] = true,
 	["american history"] = true,
 	["american"] = true,
 	["ancient history"] = true,
