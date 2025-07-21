@@ -69,6 +69,7 @@ local ignore_genres = {
 	["swedish literature"] = true,
 	["turkish literature"] = true,
 	["turkish"] = true,
+	["womens"] = true,
 	["world history"] = true,
 }
 
@@ -140,6 +141,7 @@ function parser.book_details(html)
 			:gsub("world war ii", "WWII")
 			:gsub("world war i", "WWI")
 			:gsub("&#x27;", "’")
+			:gsub("&amp;", "&")
 
 		if not ignore_genres[g] then
 			table.insert(genres, (g:gsub("%s+fiction", "")))
@@ -153,10 +155,12 @@ function parser.book_details(html)
 
 	if #series > 0 then
 		local serie, volume = series[1]:getcontent():match("(.*) #(%d+)")
-		details.series = serie
-		details.volume = volume
-		-- else
-		--     print("INFO: not a part of a series")
+		if serie then
+			details.series = serie:gsub("%s+$", "")
+			details.volume = volume
+		else
+			print("WARNING: Problem parsing series informtion " .. series[1]:getcontent())
+		end
 	end
 
 	-- print("series: ", details.series)

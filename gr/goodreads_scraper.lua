@@ -78,9 +78,9 @@ local function get_book_info(title, author)
 	return details
 end
 
-local books = data.parse("../..//kiroku/data/audiobooks.txt")
+local books = data.parse("../..//kiroku/data/ebooks.txt")
 
-local fout = io.open("audio.md", "a+")
+local fout = io.open("ebook.md", "a+")
 local info, err
 
 for _, book in pairs(books) do
@@ -89,7 +89,7 @@ for _, book in pairs(books) do
 	info, err = get_book_info(book.title, book.author)
 
 	if info then
-		fout:write(data.output(book, info) .. "\n")
+		fout:write(data.output_book(book, info) .. "\n")
 	else
 		print("Error: " .. err)
 	end
