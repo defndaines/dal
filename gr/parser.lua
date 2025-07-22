@@ -29,6 +29,7 @@ end
 
 local ignore_genres = {
 	["20th century"] = true,
+	["21st century"] = true,
 	["YA fantasy"] = true,
 	["adult"] = true,
 	["africa"] = true,
@@ -37,38 +38,57 @@ local ignore_genres = {
 	["american"] = true,
 	["ancient history"] = true,
 	["ancient"] = true,
+	["anthologies"] = true,
 	["asia"] = true,
-	["asian literature"] = true,
 	["audiobook"] = true,
+	["autobiography"] = true,
 	["biography memoir"] = true,
 	["book club"] = true,
-	["british literature"] = true,
-	["china"] = true,
+	["books about books"] = true,
+	["childrens"] = true,
+	["chick lit"] = true,
+	["comedy"] = true,
 	["dark fantasy"] = true,
+	["dragons"] = true,
 	["epic fantasy"] = true,
 	["european history"] = true,
+	["family"] = true,
+	["female authors"] = true,
 	["fiction"] = true,
-	["french literature"] = true,
-	["german literature"] = true,
+	["friendship"] = true,
+	["ghosts"] = true,
 	["high fantasy"] = true,
-	["india"] = true,
-	["indian literature"] = true,
-	["japanese literature"] = true,
-	["literature"] = true,
+	["historical fantasy"] = true,
+	["horror thriller"] = true,
+	["juvenile"] = true,
+	["latin american"] = true,
 	["magic"] = true,
+	["middle grade"] = true,
+	["military"] = true,
 	["mystery thriller"] = true,
 	["new weird"] = true,
 	["novels"] = true,
+	["political science"] = true,
+	["pulp"] = true,
+	["read for school"] = true,
 	["realistic fiction"] = true,
-	["romanian literature"] = true,
-	["scandinavian literature"] = true,
+	["reference"] = true,
+	["research"] = true,
 	["school"] = true,
 	["sci-fi fantasy"] = true,
 	["science fiction fantasy"] = true,
-	["spanish literature"] = true,
-	["swedish literature"] = true,
-	["turkish literature"] = true,
+	["space"] = true,
+	["spirituality"] = true,
+	["teen"] = true,
+	["the united states of america"] = true,
+	["theory"] = true,
 	["turkish"] = true,
+	["urban design"] = true,
+	["urban"] = true,
+	["urbanism"] = true,
+	["victorian"] = true,
+	["weird"] = true,
+	["witches"] = true,
 	["womens"] = true,
 	["world history"] = true,
 }
@@ -132,18 +152,45 @@ function parser.book_details(html)
 	end
 
 	local genres = {}
+	local is_memoir = false
+	local is_nonfiction = false
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
+
+		if g == "memoir" then
+			is_memoir = true
+		elseif g == "biography" and is_memoir then
+			g = ""
+		elseif g == "nonfiction" then
+			is_nonfiction = true
+		elseif g == "historical" and is_nonfiction then
+			g = ""
+		end
+
+		if g == "19th century" then
+			local year = tonumber(details.year)
+			if year > 1799 and year < 1900 then
+				g = ""
+			end
+		end
+
 		g = g:gsub("science fiction", "sci-fi")
 			:gsub("young adult", "YA")
 			:gsub("lgbt", "LGBT")
+			:gsub("african american", "Black")
+			:gsub("native american", "Native American")
+			:gsub("post apocalyptic", "post-apocalyptic")
 			:gsub("world war ii", "WWII")
 			:gsub("world war i", "WWI")
+			:gsub("southern", "Southern")
+			:gsub("gothic", "Gothic")
+			:gsub("westerns", "western")
 			:gsub("&#x27;", "’")
 			:gsub("&amp;", "&")
+			:gsub(".*literature", "")
 
-		if not ignore_genres[g] then
+		if not ignore_genres[g] or g == "" then
 			table.insert(genres, (g:gsub("%s+fiction", "")))
 		end
 	end
@@ -167,8 +214,6 @@ function parser.book_details(html)
 	-- print("volume: ", details.volume)
 
 	-- TODO: Check awards. Remove nominations, just want wins. "Literary awards"
-	-- TODO: Author pages sometimes include "Born" field, worth capturing?
-	-- TODO: If there is a setting, extract it. "Setting"
 
 	return details
 end

@@ -39,7 +39,9 @@ end
 
 -- Main function
 local function get_book_info(title, author)
-	local query = urlencode(title .. " " .. author)
+	local s_title = title:gsub("%p", " ")
+	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " ")
+	local query = urlencode(s_title .. " " .. s_author)
 	local search_url = "https://www.goodreads.com/search?q=" .. query
 
 	local html, err
@@ -78,9 +80,9 @@ local function get_book_info(title, author)
 	return details
 end
 
-local books = data.parse("../..//kiroku/data/ebooks.txt")
+local books = data.parse("../../kiroku/data/audiobooks.md")
 
-local fout = io.open("ebook.md", "a+")
+local fout = io.open("print.md", "a+")
 local info, err
 
 for _, book in pairs(books) do

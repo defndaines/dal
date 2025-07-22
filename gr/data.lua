@@ -6,14 +6,14 @@ function data.parse(file)
 	local content = fh:read("l")
 
 	while content do
-		title, author, rating, pages, list = content:match("(.+) | (.+) | (.+) | (.+) | (.+)")
+		local title, author, rating, list = content:match("(.+) | (.+) | (.+) | (.+)")
 
 		local book = {}
 		local tags = {}
 		book.title = title
 		book.author = author
 		book.rating = rating
-		book.pages = pages
+		-- book.pages = pages
 
 		for tag in list:gmatch("[^,]+") do
 			tags[#tags + 1] = tag:gsub("^%s+", ""):gsub("%s+$", "")
@@ -30,25 +30,14 @@ function data.parse(file)
 	return books
 end
 
---[[
-file = "../..//kiroku/data/ebooks.txt"
-books = data.parse(file)
-print(#books)
-book = books[1]
-print("title: ", book.title)
-print("author: ", book.author)
-print("rating: ", book.rating)
-print("pages: ", book.pages)
-print("tags: ", table.concat(book.tags, ", "))
-]]
-
 function data.output_audiobook(book, info)
 	local order = {}
 	order[1] = info.title
 	order[2] = info.author
 	order[3] = info.year
-	order[4] = info.num_pages or ""
-	order[5] = book.hours
+	order[4] = "XXX" -- Country still calculated by hand
+	order[5] = info.num_pages or ""
+	order[6] = book.hours
 
 	local tags = info.genres
 	local g_set = {}
@@ -71,11 +60,11 @@ function data.output_audiobook(book, info)
 		end
 	end
 
-	order[6] = table.concat(tags, ", ")
-	order[7] = info.rating
-	order[8] = info.num_ratings or ""
-	order[9] = info.id or ""
-	order[10] = info.url
+	order[7] = table.concat(tags, ", ")
+	order[8] = info.rating
+	order[9] = info.num_ratings or ""
+	order[10] = info.id or ""
+	order[11] = info.url
 
 	return "| " .. table.concat(order, " | ") .. " | "
 end
@@ -85,7 +74,8 @@ function data.output_book(book, info)
 	order[1] = info.title
 	order[2] = info.author
 	order[3] = info.year
-	order[4] = info.num_pages or ""
+	order[4] = "XXX" -- Country still calculated by hand
+	order[5] = info.num_pages or ""
 
 	local tags = info.genres
 	local g_set = {}
@@ -104,11 +94,11 @@ function data.output_book(book, info)
 		end
 	end
 
-	order[5] = table.concat(tags, ", ")
-	order[6] = info.rating
-	order[7] = info.num_ratings or ""
-	order[8] = info.id or ""
-	order[9] = info.url
+	order[6] = table.concat(tags, ", ")
+	order[7] = info.rating
+	order[8] = info.num_ratings or ""
+	order[9] = info.id or ""
+	order[10] = info.url
 
 	return "| " .. table.concat(order, " | ") .. " | "
 end
