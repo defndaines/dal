@@ -12,7 +12,6 @@ local ltn12 = require("ltn12")
 local parser = require("parser")
 local data = require("data")
 
--- Simple URL encoding function
 local function urlencode(str)
 	return str:gsub("([^%w _%%%-%.~])", function(c)
 		return string.format("%%%02X", string.byte(c))
