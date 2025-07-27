@@ -1,8 +1,8 @@
+local scraper = {}
 --[[
   Install libraries:
     luarocks install luasocket
     luarocks install luasec
-    luarocks install htmlparser
 
   https://www.goodreads.com/book/show/<book-id>
 ]]
@@ -10,7 +10,6 @@
 local https = require("ssl.https")
 local ltn12 = require("ltn12")
 local parser = require("parser")
-local data = require("data")
 
 local function urlencode(str)
 	return str:gsub("([^%w _%%%-%.~])", function(c)
@@ -36,8 +35,39 @@ local function fetch_url(url)
 	end
 end
 
--- Main function
-local function get_book_info(title, author)
+function scraper.audit_book(orig)
+	html, err = fetch_url(orig.url)
+
+	if not html then
+		return nil, "Book page fetch error: " .. err
+	end
+
+	local book = parser.book_details(html)
+	book.url = book_url
+
+	if book.title ~= orig.title then
+		print("INFO:", "original title '" .. orig.title .. "' differs from '" .. book.title .. "'")
+	end
+
+	book.title = orig.title
+
+	if book.author ~= orig.author then
+		print("INFO:", "original author '" .. orig.author .. "' differs from " .. book.author)
+	end
+
+	if book.author_link then
+		html, err = fetch_url(book.author_link)
+
+		if html then
+			book.country = parser.author_details(html)
+		end
+		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
+	end
+
+	return book
+end
+
+function scraper.get_book_info(title, author)
 	local s_title = title:gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " ")
 	local query = urlencode(s_title .. " " .. s_author)
@@ -51,7 +81,7 @@ local function get_book_info(title, author)
 	end
 
 	-- print(search_url)
-	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
+	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-search.html", "w")
 	-- file:write(html)
 	-- file:close()
 
@@ -71,43 +101,29 @@ local function get_book_info(title, author)
 	-- file:write(html)
 	-- file:close()
 
-	local details = parser.book_details(html)
-	details.url = book_url
+	local book = parser.book_details(html)
+	book.url = book_url
 
-	if details.title ~= title then
-		print("INFO:", "original title '" .. title .. "' differs from " .. details.title)
+	if book.title ~= title then
+		print("INFO:", "original title '" .. title .. "' differs from " .. book.title)
 	end
 
-	details.title = title
+	book.title = title
 
-	if details.author ~= author then
-		print("INFO:", "original author '" .. author .. "' differs from " .. details.author)
+	if book.author ~= author then
+		print("INFO:", "original author '" .. author .. "' differs from " .. book.author)
 	end
 
-	if details.author_link then
-		html, err = fetch_url(details.author_link)
+	if book.author_link then
+		html, err = fetch_url(book.author_link)
 
 		if html then
-			details.country = parser.author_details(html)
+			book.country = parser.author_details(html)
 		end
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
 
-	return details
+	return book
 end
 
-local book = { title = arg[1], author = arg[2] }
-
-local info, err = get_book_info(book.title, book.author)
-
-if info then
-	for k, v in pairs(info) do
-		if not book[k] then
-			book[k] = v
-		end
-	end
-
-	print(data.output(book))
-else
-	print("Error: " .. err)
-end
+return scraper

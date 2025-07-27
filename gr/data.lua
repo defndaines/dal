@@ -11,7 +11,7 @@ local function parse_tags(list)
 end
 
 local function parse_audio_book(line)
-	local title, author, year, country, pages, hours, list, rating, num_ratings, id, link =
+	local title, author, year, country, pages, hours, list, rating, num_ratings, id, url =
 		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) |")
 
 	return {
@@ -25,12 +25,12 @@ local function parse_audio_book(line)
 		rating = rating,
 		num_ratings = num_ratings,
 		id = id,
-		link = link,
+		url = url,
 	}
 end
 
 local function parse_book(line)
-	local title, author, year, country, pages, list, rating, num_ratings, id, link =
+	local title, author, year, country, pages, list, rating, num_ratings, id, url =
 		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) |")
 
 	return {
@@ -43,7 +43,7 @@ local function parse_book(line)
 		rating = rating,
 		num_ratings = num_ratings,
 		id = id,
-		link = link,
+		url = url,
 	}
 end
 
@@ -86,14 +86,14 @@ function data.output_audiobook(book, info)
 	order[2] = info.author
 	order[3] = info.year
 	order[4] = "XXX" -- Country still calculated by hand
-	order[5] = info.num_pages or ""
+	order[5] = info.pages or ""
 	order[6] = book.hours
 
 	local tags = info.genres
-	local g_set = {}
+	local tag_set = {}
 
 	for _, genre in ipairs(info.genres) do
-		g_set[genre] = true
+		tag_set[genre] = true
 	end
 
 	if info.series then
@@ -105,7 +105,7 @@ function data.output_audiobook(book, info)
 	end
 
 	for _, tag in ipairs(book.tags) do
-		if not g_set[tag] then
+		if not tag_set[tag] then
 			tags[#tags + 1] = tag
 		end
 	end
@@ -121,34 +121,38 @@ end
 
 function data.output_book(book, info)
 	local order = {}
-	order[1] = info.title
-	order[2] = info.author
-	order[3] = info.year
-	order[4] = "XXX" -- Country still calculated by hand
-	order[5] = info.num_pages or ""
+	order[#order + 1] = info.title
+	order[#order + 1] = book.author
+	order[#order + 1] = book.year or info.year
+	order[#order + 1] = info.country or book.country or "XXX"
+	order[#order + 1] = book.pages or info.pages or ""
 
-	local tags = info.genres
-	local g_set = {}
+	if book.hours then
+		order[#order + 1] = book.hours
+	end
 
-	for _, genre in ipairs(info.genres) do
-		g_set[genre] = true
+	local tags = book.tags or {}
+	local tag_set = {}
+
+	for _, tag in ipairs(book.tags) do
+		tag_set[tag] = true
+	end
+
+	for _, tag in ipairs(info.tags) do
+		if not tag_set[tag] then
+			tags[#tags + 1] = tag
+		end
 	end
 
 	if info.series then
 		tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
 	end
 
-	for _, tag in ipairs(book.tags) do
-		if not g_set[tag] then
-			tags[#tags + 1] = tag
-		end
-	end
-
-	order[6] = table.concat(tags, ", ")
-	order[7] = info.rating
-	order[8] = info.num_ratings or ""
-	order[9] = info.id or ""
-	order[10] = info.url
+	order[#order + 1] = table.concat(tags, ", ")
+	order[#order + 1] = info.rating
+	order[#order + 1] = info.num_ratings or ""
+	order[#order + 1] = info.id or book.id or ""
+	order[#order + 1] = info.url or book.url
 
 	return "| " .. table.concat(order, " | ") .. " | "
 end

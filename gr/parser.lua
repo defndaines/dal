@@ -1,4 +1,8 @@
 local parser = {}
+--[[
+  Install library:
+    luarocks install htmlparser
+]]
 
 local htmlparser = require("htmlparser")
 
@@ -31,6 +35,7 @@ local ignore_genres = {
 	["20th century"] = true,
 	["21st century"] = true,
 	["YA fantasy"] = true,
+	["academic"] = true,
 	["adult"] = true,
 	["africa"] = true,
 	["aliens"] = true,
@@ -38,6 +43,7 @@ local ignore_genres = {
 	["american"] = true,
 	["ancient history"] = true,
 	["ancient"] = true,
+	["animals"] = true,
 	["anthologies"] = true,
 	["asia"] = true,
 	["audiobook"] = true,
@@ -45,9 +51,11 @@ local ignore_genres = {
 	["biography memoir"] = true,
 	["book club"] = true,
 	["books about books"] = true,
-	["childrens"] = true,
+	["brazil"] = true,
 	["chick lit"] = true,
+	["childrens"] = true,
 	["comedy"] = true,
+	["cultural"] = true,
 	["dark fantasy"] = true,
 	["dragons"] = true,
 	["epic fantasy"] = true,
@@ -56,10 +64,13 @@ local ignore_genres = {
 	["female authors"] = true,
 	["fiction"] = true,
 	["friendship"] = true,
+	["gaming"] = true,
 	["ghosts"] = true,
 	["high fantasy"] = true,
 	["historical fantasy"] = true,
 	["horror thriller"] = true,
+	["how to"] = true,
+	["japan"] = true,
 	["juvenile"] = true,
 	["latin american"] = true,
 	["magic"] = true,
@@ -82,6 +93,7 @@ local ignore_genres = {
 	["teen"] = true,
 	["the united states of america"] = true,
 	["theory"] = true,
+	["translated"] = true,
 	["turkish"] = true,
 	["urban design"] = true,
 	["urban"] = true,
