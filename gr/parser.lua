@@ -115,6 +115,28 @@ function parser.book_details(html)
 
 	local tree = htmlparser.parse(html, 10000)
 
+	local title = tree:select("h1")
+
+	if #title > 0 then
+		details.title = title[1]:getcontent()
+	end
+
+	local authors = {}
+	local contributors = tree:select("div.ContributorLinksList a.ContributorLink")
+
+	for _, contributor in pairs(contributors) do
+		local role = contributor:select("span.ContributorLink__role")
+
+		if #role > 0 and #authors > 0 then
+			-- skip translators, editors, etc.
+		else
+			local span = contributor:select("span.ContributorLink__name")[1]
+			authors[#authors + 1] = span:getcontent()
+		end
+	end
+
+	details.author = table.concat(uniq(authors), ", ")
+
 	local ratings = tree:select("div.RatingStatistics__rating")
 
 	if #ratings > 0 then

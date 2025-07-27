@@ -73,8 +73,16 @@ local function get_book_info(title, author)
 
 	local details = parser.book_details(html)
 	details.url = book_url
+
+	if details.title ~= title then
+		print("INFO:", "original title '" .. title .. "' differs from " .. details.title)
+	end
+
 	details.title = title
-	details.author = author
+
+	if details.author ~= author then
+		print("INFO:", "original author '" .. author .. "' differs from " .. details.author)
+	end
 
 	return details
 end
