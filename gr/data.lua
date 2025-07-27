@@ -97,9 +97,13 @@ function data.output_audiobook(book, info)
 	end
 
 	if info.series then
+		local series = info.series:lower():gsub("%p", " "):gsub("%s+$", ""):gsub("%s+", "-")
+
 		if info.volume then
-			tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
-		else
+			series = series .. "-" .. info.volume
+		end
+
+		if not tag_set[series] then
 			tags[#tags + 1] = info.series:lower():gsub("%s", "-")
 		end
 	end

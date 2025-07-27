@@ -36,65 +36,154 @@ local ignore_genres = {
 	["21st century"] = true,
 	["YA fantasy"] = true,
 	["academic"] = true,
+	["activism"] = true,
 	["adult"] = true,
 	["africa"] = true,
+	["agriculture"] = true,
+	["algeria"] = true,
 	["aliens"] = true,
+	["american civil war"] = true,
 	["american history"] = true,
 	["american"] = true,
 	["ancient history"] = true,
 	["ancient"] = true,
+	["animal"] = true,
 	["animals"] = true,
 	["anthologies"] = true,
+	["anthropology"] = true,
+	["anti racist"] = true,
+	["archaeology"] = true,
+	["art"] = true,
 	["asia"] = true,
 	["audiobook"] = true,
+	["australia"] = true,
 	["autobiography"] = true,
+	["banned books"] = true,
 	["biography memoir"] = true,
 	["book club"] = true,
 	["books about books"] = true,
 	["brazil"] = true,
+	["bulgaria"] = true,
+	["business"] = true,
+	["canada"] = true,
+	["cats"] = true,
 	["chick lit"] = true,
 	["childrens"] = true,
+	["china"] = true,
+	["christmas"] = true,
+	["civil war"] = true,
+	["collections"] = true,
 	["comedy"] = true,
+	["comics"] = true,
+	["cozy fantasy"] = true,
+	["cozy"] = true,
 	["cultural"] = true,
+	["cycling"] = true,
 	["dark fantasy"] = true,
+	["death"] = true,
+	["death"] = true,
+	["dinosaurs"] = true,
 	["dragons"] = true,
+	["drama"] = true,
+	["engineering"] = true,
 	["epic fantasy"] = true,
+	["ethiopia"] = true,
 	["european history"] = true,
+	["fae"] = true,
+	["fairies"] = true,
+	["fairy tales"] = true,
 	["family"] = true,
+	["fantasy romance"] = true,
 	["female authors"] = true,
 	["fiction"] = true,
+	["france"] = true,
 	["friendship"] = true,
 	["gaming"] = true,
+	["gender"] = true,
+	["germany"] = true,
 	["ghosts"] = true,
+	["grief"] = true,
+	["hard boiled"] = true,
 	["high fantasy"] = true,
 	["historical fantasy"] = true,
 	["horror thriller"] = true,
 	["how to"] = true,
+	["hugo awards"] = true,
+	["india"] = true,
+	["ireland"] = true,
+	["israel"] = true,
+	["italy"] = true,
+	["italy"] = true,
+	["ivory coast"] = true,
 	["japan"] = true,
+	["jazz"] = true,
+	["judaism"] = true,
 	["juvenile"] = true,
+	["kenya"] = true,
 	["latin american"] = true,
+	["legal thriller"] = true,
+	["lovecraftian"] = true,
 	["magic"] = true,
+	["medical"] = true,
+	["medieval"] = true,
+	["middle east"] = true,
 	["middle grade"] = true,
 	["military"] = true,
+	["morocco"] = true,
+	["mozambique"] = true,
 	["mystery thriller"] = true,
 	["new weird"] = true,
+	["new york"] = true,
+	["nigeria"] = true,
+	["nobel prize"] = true,
 	["novels"] = true,
+	["pakistan"] = true,
+	["philosophy"] = true,
+	["photography"] = true,
+	["poland"] = true,
 	["political science"] = true,
+	["poverty"] = true,
+	["psychology"] = true,
 	["pulp"] = true,
 	["read for school"] = true,
 	["realistic fiction"] = true,
+	["realistic"] = true,
 	["reference"] = true,
+	["relationships"] = true,
+	["religion"] = true,
 	["research"] = true,
+	["robots"] = true,
+	["roman"] = true,
+	["romania"] = true,
+	["russia"] = true,
+	["satire"] = true,
 	["school"] = true,
 	["sci-fi fantasy"] = true,
 	["science fiction fantasy"] = true,
+	["scotland"] = true,
+	["self help"] = true,
+	["slice of life"] = true,
+	["social media"] = true,
+	["somalia"] = true,
 	["space"] = true,
+	["spain"] = true,
 	["spirituality"] = true,
+	["supernatural"] = true,
+	["survival"] = true,
+	["suspense"] = true,
+	["sustainability"] = true,
+	["sweden"] = true,
 	["teen"] = true,
 	["the united states of america"] = true,
+	["theatre"] = true,
 	["theory"] = true,
+	["transgender"] = true,
 	["translated"] = true,
+	["transport"] = true,
+	["travel"] = true,
 	["turkish"] = true,
+	["ukraine"] = true,
+	["unfinished"] = true,
 	["urban design"] = true,
 	["urban"] = true,
 	["urbanism"] = true,
@@ -103,6 +192,8 @@ local ignore_genres = {
 	["witches"] = true,
 	["womens"] = true,
 	["world history"] = true,
+	["zambia"] = true,
+	["zimbabwe"] = true,
 }
 
 local function uniq(list)
@@ -213,20 +304,24 @@ function parser.book_details(html)
 		end
 
 		g = g:gsub("science fiction", "sci-fi")
-			:gsub("young adult", "YA")
-			:gsub("lgbt", "LGBT")
 			:gsub("african american", "Black")
+			:gsub("gothic", "Gothic")
+			:gsub("holocaust", "Holocaust")
+			:gsub("jewish", "Jewish")
+			:gsub("lgbt", "LGBT")
 			:gsub("native american", "Native American")
+			:gsub("southern", "Southern")
+			:gsub("young adult", "YA")
 			:gsub("post apocalyptic", "post-apocalyptic")
 			:gsub("world war ii", "WWII")
 			:gsub("world war i", "WWI")
-			:gsub("southern", "Southern")
-			:gsub("gothic", "Gothic")
 			:gsub("dystopia", "dystopian")
+			:gsub("plays", "play")
 			:gsub("westerns", "western")
 			:gsub("&#x27;", "’")
 			:gsub("&amp;", "&")
 			:gsub(".*literature", "")
+			:gsub(".*mythology", "mythology")
 			:gsub("%s+fiction", "")
 
 		if not ignore_genres[g] and g ~= "" then
@@ -239,10 +334,11 @@ function parser.book_details(html)
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
 
 	if #series > 0 then
-		local serie, volume = series[1]:getcontent():match("(.*) #(%d+)")
+		local serie = series[1]:getcontent():gsub("%s*#.*", "")
+
 		if serie then
-			details.series = serie:gsub("%s+$", "")
-			details.volume = volume
+			details.series = serie:gsub("%s+$", ""):gsub("&#x27;", "’")
+			details.volume = series[1]:getcontent():match("#(%d+)")
 		else
 			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
 		end
