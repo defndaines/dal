@@ -93,3 +93,27 @@ assert(details.published == "March 27, 2007", "published was '" .. details.publi
 assert(details.tags[1] == "fantasy", "fantasy genre missing")
 assert(details.series == "The Kingkiller Chronicle", "series was '" .. details.series .. "'")
 assert(details.volume == "1", "volume was '" .. details.volume .. "'")
+
+-- Test Extracting Author Info
+file = io.open("spec/nnedi-okorafor.html", "r")
+local author_html = file:read("*a")
+file:close()
+
+local country = parser.author_details(author_html)
+assert(country == "U.S.", "Nnedi Okorafor’s birthplace: " .. country)
+
+-- Test Another Author
+file = io.open("spec/sohn-won-pyung.html", "r")
+local author_html = file:read("*a")
+file:close()
+
+country = parser.author_details(author_html)
+assert(country == "South Korea", "Sohn Won-Pyung’s birthplace: " .. country)
+
+-- Test Author with No Birth Info
+file = io.open("spec/caitlin-yarsky.html", "r")
+local author_html = file:read("*a")
+file:close()
+
+country = parser.author_details(author_html)
+assert(country == nil, "Caitlin Yarsky’s birthplace: " .. (country or "nil"))

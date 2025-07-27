@@ -84,6 +84,15 @@ local function get_book_info(title, author)
 		print("INFO:", "original author '" .. author .. "' differs from " .. details.author)
 	end
 
+	if details.author_link then
+		html, err = fetch_url(details.author_link)
+
+		if html then
+			details.country = parser.author_details(html)
+		end
+		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
+	end
+
 	return details
 end
 

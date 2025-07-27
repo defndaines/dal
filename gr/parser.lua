@@ -118,7 +118,7 @@ function parser.book_details(html)
 	local title = tree:select("h1")
 
 	if #title > 0 then
-		details.title = title[1]:getcontent()
+		details.title = title[1]:getcontent():gsub("&#x27;", "’"):gsub("amp;", "")
 	end
 
 	local authors = {}
@@ -127,11 +127,15 @@ function parser.book_details(html)
 	for _, contributor in pairs(contributors) do
 		local role = contributor:select("span.ContributorLink__role")
 
+		if not details.author_link then
+			details.author_link = contributor.attributes["href"]
+		end
+
 		if #role > 0 and #authors > 0 then
 			-- skip translators, editors, etc.
 		else
 			local span = contributor:select("span.ContributorLink__name")[1]
-			authors[#authors + 1] = span:getcontent()
+			authors[#authors + 1] = span:getcontent():gsub("%s+", " "):gsub("&#x27;", "’")
 		end
 	end
 
@@ -238,6 +242,37 @@ function parser.book_details(html)
 	-- TODO: Check awards. Remove nominations, just want wins. "Literary awards"
 
 	return details
+end
+
+-- For now, only extracting birthplace if present.
+function parser.author_details(html)
+	local birthplace = html:match('<div class="dataTitle">Born</div>([^<]*)')
+
+	if birthplace then
+		birthplace = birthplace:gsub("^%s*", ""):gsub("%s*$", ""):gsub("^in ", "")
+
+		if birthplace:match("United States") then
+			return "U.S."
+		elseif birthplace:match("United Kingdom") then
+			return "U.K."
+		elseif birthplace:match("Korea, Republic of") then
+			return "South Korea"
+		elseif birthplace:match("Seoul") then
+			return "South Korea"
+		elseif birthplace:match("Korea, Democratic People") then
+			return "North Korea"
+		elseif birthplace:match("German") then
+			return "Germany"
+		elseif birthplace:match("Russia") then
+			return "Russia"
+		elseif birthplace:match("Kenya") then
+			return "Kenya"
+		else
+			return birthplace:gsub("[^,]*, ", "")
+		end
+	end
+
+	return birthplace
 end
 
 return parser
