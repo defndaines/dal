@@ -79,12 +79,18 @@ local function get_book_info(title, author)
 	return details
 end
 
-local book = { title = arg[1], author = arg[2], tags = {} }
+local book = { title = arg[1], author = arg[2] }
 
 local info, err = get_book_info(book.title, book.author)
 
 if info then
-	print(data.output_book(book, info))
+	for k, v in pairs(info) do
+		if not book[k] then
+			book[k] = v
+		end
+	end
+
+	print(data.output(book))
 else
 	print("Error: " .. err)
 end

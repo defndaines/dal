@@ -94,16 +94,14 @@ local ignore_genres = {
 }
 
 local function uniq(list)
-	local hash = {}
-
-	for _, v in ipairs(list) do
-		hash[v] = true
-	end
-
+	local set = {}
 	local deduped = {}
 
-	for k, _ in pairs(hash) do
-		deduped[#deduped + 1] = k
+	for _, v in ipairs(list) do
+		if not set[v] then
+			deduped[#deduped + 1] = v
+			set[v] = true
+		end
 	end
 
 	return deduped
@@ -135,16 +133,16 @@ function parser.book_details(html)
 		print("WARNING: number of ratings not found!")
 	end
 
-	local num_pages = tree:select("div.FeaturedDetails p")
+	local pages = tree:select("div.FeaturedDetails p")
 
-	if #num_pages > 0 then
-		details.num_pages = num_pages[1]:getcontent():gsub("%D", "")
-		-- print("num_pages: ", details.num_pages)
+	if #pages > 0 then
+		details.pages = pages[1]:getcontent():gsub("%D", "")
+		-- print("pages: ", details.pages)
 
-		if num_pages[2] then
-			details.year = num_pages[2]:getcontent():match("%d%d%d%d")
+		if pages[2] then
+			details.year = pages[2]:getcontent():match("%d%d%d%d")
 			-- print("year: ", details.year)
-			details.published = num_pages[2]:getcontent():match("%w+ %d+, %d%d%d%d")
+			details.published = pages[2]:getcontent():match("%w+ %d+, %d%d%d%d")
 			-- print("published: ", details.published)
 		end
 	else
@@ -164,6 +162,7 @@ function parser.book_details(html)
 			g = ""
 		elseif g == "nonfiction" then
 			is_nonfiction = true
+			table.insert(genres, 1, g)
 		elseif g == "historical" and is_nonfiction then
 			g = ""
 		end
@@ -190,14 +189,14 @@ function parser.book_details(html)
 			:gsub("&#x27;", "’")
 			:gsub("&amp;", "&")
 			:gsub(".*literature", "")
+			:gsub("%s+fiction", "")
 
-		if not ignore_genres[g] or g == "" then
-			table.insert(genres, (g:gsub("%s+fiction", "")))
+		if not ignore_genres[g] and g ~= "" then
+			table.insert(genres, g)
 		end
 	end
 
-	details.genres = uniq(genres)
-	-- print("genres: ", table.concat(genres, ", "))
+	details.tags = uniq(genres)
 
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
 
@@ -207,7 +206,7 @@ function parser.book_details(html)
 			details.series = serie:gsub("%s+$", "")
 			details.volume = volume
 		else
-			print("WARNING: Problem parsing series informtion " .. series[1]:getcontent())
+			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
 		end
 	end
 
