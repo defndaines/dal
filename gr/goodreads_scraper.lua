@@ -1,9 +1,9 @@
 local scraper = require("scraper")
 local data = require("data")
 
-local path = "../../kiroku/data/audiobooks.md"
+-- local path = "../../kiroku/data/audiobooks.md"
 -- local path = "../../kiroku/data/ebooks.md"
--- local path = "../../kiroku/data/printbooks.md"
+local path = "../../kiroku/data/printbooks.md"
 
 local books = data.parse(path)
 local outfile = "/tmp/" .. path:gsub(".*/", "")

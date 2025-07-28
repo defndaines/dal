@@ -1,4 +1,7 @@
+#!/usr/bin/env lua
+
 local parser = require("parser")
+local data = require("data")
 
 -- Test Extracting Book Title
 
@@ -144,3 +147,20 @@ file:close()
 details = parser.book_details(book_html)
 assert(details.series == "Port William", "series was '" .. details.series .. "'")
 assert(not details.volume, "volume was '" .. (details.volume or "nil") .. "'")
+
+-- Don't Double Print Series Information
+local series_re = "the%-stormlight%-archive%-1"
+local line = "| The Way of Kings | Brandon Sanderson | 2010 | U.S. | 1007 | 46 "
+	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 625908 | 7235533 "
+	.. "| https://www.goodreads.com/book/show/7235533-the-way-of-kings |"
+local book = data.parse_audio_book(line)
+
+file = io.open("spec/The-Way-of-Kings.html", "r")
+book_html = file:read("*a")
+file:close()
+
+local info = parser.book_details(book_html)
+local output = data.output_book(book, info)
+
+assert(not output:gsub(series_re, "", 1):match(series_re), "series tag appears more than once")
+assert(output == line)

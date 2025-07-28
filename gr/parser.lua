@@ -39,6 +39,7 @@ local ignore_genres = {
 	["action"] = true,
 	["activism"] = true,
 	["adult"] = true,
+	["adventure"] = true,
 	["africa"] = true,
 	["agriculture"] = true,
 	["algeria"] = true,
@@ -48,6 +49,7 @@ local ignore_genres = {
 	["american"] = true,
 	["ancient history"] = true,
 	["ancient"] = true,
+	["angola"] = true,
 	["animal"] = true,
 	["animals"] = true,
 	["anthologies"] = true,
@@ -72,13 +74,17 @@ local ignore_genres = {
 	["chick lit"] = true,
 	["childrens"] = true,
 	["china"] = true,
+	["christianity"] = true,
 	["christmas"] = true,
 	["cities"] = true,
 	["civil war"] = true,
 	["collections"] = true,
+	["college"] = true,
 	["comedy"] = true,
 	["comics manga"] = true,
 	["comics"] = true,
+	["contemporary romance"] = true,
+	["cooking"] = true,
 	["cozy fantasy"] = true,
 	["cozy"] = true,
 	["cultural"] = true,
@@ -87,6 +93,7 @@ local ignore_genres = {
 	["death"] = true,
 	["design"] = true,
 	["dinosaurs"] = true,
+	["dragonlance"] = true,
 	["dragons"] = true,
 	["drama"] = true,
 	["dungeons and dragons"] = true,
@@ -106,22 +113,27 @@ local ignore_genres = {
 	["fantasy romance"] = true,
 	["female authors"] = true,
 	["fiction"] = true,
+	["food history"] = true,
 	["forgotten realms"] = true,
 	["france"] = true,
 	["friendship"] = true,
+	["gamebooks"] = true,
 	["gaming"] = true,
 	["gay"] = true,
 	["gender"] = true,
 	["germany"] = true,
 	["ghost stories"] = true,
 	["ghosts"] = true,
+	["go"] = true,
 	["graphic novels comics"] = true,
 	["graphic novels"] = true,
+	["greece"] = true,
 	["grief"] = true,
 	["hard boiled"] = true,
 	["high fantasy"] = true,
 	["historical fantasy"] = true,
 	["horror thriller"] = true,
+	["horses"] = true,
 	["how to"] = true,
 	["hugo awards"] = true,
 	["hungary"] = true,
@@ -136,7 +148,9 @@ local ignore_genres = {
 	["judaism"] = true,
 	["juvenile"] = true,
 	["kenya"] = true,
+	["language"] = true,
 	["latin american"] = true,
+	["latinx"] = true,
 	["legal thriller"] = true,
 	["libya"] = true,
 	["literary criticism"] = true,
@@ -147,17 +161,21 @@ local ignore_genres = {
 	["medieval"] = true,
 	["middle east"] = true,
 	["middle grade"] = true,
+	["military history"] = true,
 	["military sci-fi"] = true,
 	["military"] = true,
 	["morocco"] = true,
 	["mozambique"] = true,
 	["music biography"] = true,
 	["mystery thriller"] = true,
+	["native americans"] = true,
 	["new weird"] = true,
 	["new york"] = true,
 	["nigeria"] = true,
 	["nobel prize"] = true,
+	["novel in verse"] = true,
 	["novels"] = true,
+	["oral history"] = true,
 	["pakistan"] = true,
 	["parenting"] = true,
 	["philosophy"] = true,
@@ -165,6 +183,7 @@ local ignore_genres = {
 	["picture books"] = true,
 	["poland"] = true,
 	["political science"] = true,
+	["pop culture"] = true,
 	["poverty"] = true,
 	["psychology"] = true,
 	["pulp"] = true,
@@ -189,6 +208,7 @@ local ignore_genres = {
 	["short story collection"] = true,
 	["slice of life"] = true,
 	["social media"] = true,
+	["social movements"] = true,
 	["somalia"] = true,
 	["space"] = true,
 	["spain"] = true,
@@ -209,14 +229,18 @@ local ignore_genres = {
 	["turkish"] = true,
 	["ukraine"] = true,
 	["unfinished"] = true,
+	["united states"] = true,
 	["urban design"] = true,
 	["urban"] = true,
 	["urbanism"] = true,
 	["victorian"] = true,
 	["weird"] = true,
 	["witches"] = true,
+	["wolves"] = true,
 	["womens"] = true,
 	["world history"] = true,
+	["writing"] = true,
+	["ya contemporary"] = true,
 	["zambia"] = true,
 	["zimbabwe"] = true,
 	["漫画"] = true,
@@ -307,19 +331,31 @@ function parser.book_details(html)
 	local genres = {}
 	local is_memoir = false
 	local is_nonfiction = false
+	local is_romantasy = false
+	local is_post_apocalyptic = false
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
 
 		if g == "memoir" then
 			is_memoir = true
+		elseif g == "post-apocalyptic" then
+			is_post_apocalyptic = true
+		elseif is_post_apocalyptic and g == "apocalyptic" then
+			g = ""
 		elseif g == "biography" and is_memoir then
+			g = ""
+		elseif is_romantasy and g == "fantasy" then
+			g = ""
+		elseif is_romantasy and g == "romance" then
 			g = ""
 		elseif g == "nonfiction" then
 			is_nonfiction = true
 			table.insert(genres, 1, g)
 		elseif g == "historical" and is_nonfiction then
 			g = ""
+		elseif g == "romantasy" then
+			is_romantasy = true
 		end
 
 		if g == "19th century" then
@@ -344,6 +380,7 @@ function parser.book_details(html)
 			:gsub("world war i", "WWI")
 			:gsub("dystopia", "dystopian")
 			:gsub("plays", "play")
+			:gsub("retellings", "retelling")
 			:gsub("westerns", "western")
 			:gsub("&#x27;", "’")
 			:gsub("&amp;", "&")
@@ -361,7 +398,14 @@ function parser.book_details(html)
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
 
 	if #series > 0 then
-		local series_info = series[1]:getcontent():gsub("&#x27;", "’"):gsub("'", "’")
+		local series_info = series[1]
+			:getcontent()
+			:gsub("&#x27;", "’")
+			:gsub("'", "’")
+			:gsub("&amp;", "&")
+			:gsub("%[.-%]", "")
+			:gsub("%(.-%)", "")
+			:gsub(":", "")
 		local serie = series_info:gsub("%s*#.*", "")
 
 		if serie then

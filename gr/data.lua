@@ -10,7 +10,7 @@ local function parse_tags(list)
 	return tags
 end
 
-local function parse_audio_book(line)
+function data.parse_audio_book(line)
 	local title, author, year, country, pages, hours, list, rating, num_ratings, id, url =
 		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) |")
 
@@ -65,7 +65,7 @@ function data.parse(file)
 
 	while content do
 		if is_audio then
-			book = parse_audio_book(content)
+			book = data.parse_audio_book(content)
 		else
 			book = parse_book(content)
 		end
@@ -106,9 +106,13 @@ function data.output_book(book, info)
 	end
 
 	if info.series then
+		local series_tag = info.series:lower():gsub(",", ""):gsub("%s+", "-")
+
 		if info.volume then
-			tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
-		else
+			series_tag = series_tag .. "-" .. info.volume
+		end
+
+		if not tag_set[series_tag] then
 			tags[#tags + 1] = info.series:lower():gsub("%s", "-")
 		end
 	end
@@ -119,7 +123,7 @@ function data.output_book(book, info)
 	order[#order + 1] = book.id or info.id or ""
 	order[#order + 1] = book.url or info.url
 
-	return "| " .. table.concat(order, " | ") .. " | "
+	return "| " .. table.concat(order, " | ") .. " |"
 end
 
 function data.output(book)
