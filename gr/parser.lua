@@ -36,6 +36,7 @@ local ignore_genres = {
 	["21st century"] = true,
 	["YA fantasy"] = true,
 	["academic"] = true,
+	["action"] = true,
 	["activism"] = true,
 	["adult"] = true,
 	["africa"] = true,
@@ -71,6 +72,7 @@ local ignore_genres = {
 	["childrens"] = true,
 	["china"] = true,
 	["christmas"] = true,
+	["cities"] = true,
 	["civil war"] = true,
 	["collections"] = true,
 	["comedy"] = true,
@@ -82,11 +84,18 @@ local ignore_genres = {
 	["dark fantasy"] = true,
 	["death"] = true,
 	["death"] = true,
+	["design"] = true,
 	["dinosaurs"] = true,
 	["dragons"] = true,
 	["drama"] = true,
+	["dungeons and dragons"] = true,
+	["ecology"] = true,
+	["education"] = true,
+	["egypt"] = true,
 	["engineering"] = true,
+	["environment"] = true,
 	["epic fantasy"] = true,
+	["epic"] = true,
 	["ethiopia"] = true,
 	["european history"] = true,
 	["fae"] = true,
@@ -96,12 +105,16 @@ local ignore_genres = {
 	["fantasy romance"] = true,
 	["female authors"] = true,
 	["fiction"] = true,
+	["forgotten realms"] = true,
 	["france"] = true,
 	["friendship"] = true,
 	["gaming"] = true,
+	["gay"] = true,
 	["gender"] = true,
 	["germany"] = true,
+	["ghost stories"] = true,
 	["ghosts"] = true,
+	["graphic novels comics"] = true,
 	["grief"] = true,
 	["hard boiled"] = true,
 	["high fantasy"] = true,
@@ -109,6 +122,7 @@ local ignore_genres = {
 	["horror thriller"] = true,
 	["how to"] = true,
 	["hugo awards"] = true,
+	["hungary"] = true,
 	["india"] = true,
 	["ireland"] = true,
 	["israel"] = true,
@@ -122,15 +136,20 @@ local ignore_genres = {
 	["kenya"] = true,
 	["latin american"] = true,
 	["legal thriller"] = true,
+	["libya"] = true,
+	["literary criticism"] = true,
 	["lovecraftian"] = true,
 	["magic"] = true,
+	["mauritius"] = true,
 	["medical"] = true,
 	["medieval"] = true,
 	["middle east"] = true,
 	["middle grade"] = true,
+	["military sci-fi"] = true,
 	["military"] = true,
 	["morocco"] = true,
 	["mozambique"] = true,
+	["music biography"] = true,
 	["mystery thriller"] = true,
 	["new weird"] = true,
 	["new york"] = true,
@@ -138,8 +157,10 @@ local ignore_genres = {
 	["nobel prize"] = true,
 	["novels"] = true,
 	["pakistan"] = true,
+	["parenting"] = true,
 	["philosophy"] = true,
 	["photography"] = true,
+	["picture books"] = true,
 	["poland"] = true,
 	["political science"] = true,
 	["poverty"] = true,
@@ -153,6 +174,7 @@ local ignore_genres = {
 	["religion"] = true,
 	["research"] = true,
 	["robots"] = true,
+	["role playing games"] = true,
 	["roman"] = true,
 	["romania"] = true,
 	["russia"] = true,
@@ -162,6 +184,7 @@ local ignore_genres = {
 	["science fiction fantasy"] = true,
 	["scotland"] = true,
 	["self help"] = true,
+	["short story collection"] = true,
 	["slice of life"] = true,
 	["social media"] = true,
 	["somalia"] = true,
@@ -310,6 +333,7 @@ function parser.book_details(html)
 			:gsub("jewish", "Jewish")
 			:gsub("lgbt", "LGBT")
 			:gsub("native american", "Native American")
+			:gsub("native americans", "Native American")
 			:gsub("southern", "Southern")
 			:gsub("young adult", "YA")
 			:gsub("post apocalyptic", "post-apocalyptic")
@@ -334,11 +358,11 @@ function parser.book_details(html)
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
 
 	if #series > 0 then
-		local serie = series[1]:getcontent():gsub("%s*#.*", "")
+		local serie = series[1]:getcontent():gsub("&#x27;", "’"):gsub("%s*#.*", "")
 
 		if serie then
-			details.series = serie:gsub("%s+$", ""):gsub("&#x27;", "’")
-			details.volume = series[1]:getcontent():match("#(%d+)")
+			details.series = serie:gsub("%s+$", "")
+			details.volume = series[1]:getcontent():match("#(%d+%S)")
 		else
 			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
 		end

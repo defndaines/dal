@@ -80,55 +80,12 @@ function data.parse(file)
 	return books
 end
 
-function data.output_audiobook(book, info)
-	local order = {}
-	order[1] = info.title
-	order[2] = info.author
-	order[3] = info.year
-	order[4] = "XXX" -- Country still calculated by hand
-	order[5] = info.pages or ""
-	order[6] = book.hours
-
-	local tags = info.genres
-	local tag_set = {}
-
-	for _, genre in ipairs(info.genres) do
-		tag_set[genre] = true
-	end
-
-	if info.series then
-		local series = info.series:lower():gsub("%p", " "):gsub("%s+$", ""):gsub("%s+", "-")
-
-		if info.volume then
-			series = series .. "-" .. info.volume
-		end
-
-		if not tag_set[series] then
-			tags[#tags + 1] = info.series:lower():gsub("%s", "-")
-		end
-	end
-
-	for _, tag in ipairs(book.tags) do
-		if not tag_set[tag] then
-			tags[#tags + 1] = tag
-		end
-	end
-
-	order[7] = table.concat(tags, ", ")
-	order[8] = info.rating
-	order[9] = info.num_ratings or ""
-	order[10] = info.id or ""
-	order[11] = info.url
-
-	return "| " .. table.concat(order, " | ") .. " | "
-end
-
 function data.output_book(book, info)
 	local order = {}
-	order[#order + 1] = info.title
-	order[#order + 1] = book.author
+	order[#order + 1] = book.title or info.title
+	order[#order + 1] = book.author or info.author
 	order[#order + 1] = book.year or info.year
-	order[#order + 1] = info.country or book.country or "XXX"
+	order[#order + 1] = book.country or info.country or "XXX"
 	order[#order + 1] = book.pages or info.pages or ""
 
 	if book.hours then
@@ -149,14 +106,18 @@ function data.output_book(book, info)
 	end
 
 	if info.series then
-		tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
+		if info.volume then
+			tags[#tags + 1] = info.series:lower():gsub("%s", "-") .. "-" .. info.volume
+		else
+			tags[#tags + 1] = info.series:lower():gsub("%s", "-")
+		end
 	end
 
 	order[#order + 1] = table.concat(tags, ", ")
 	order[#order + 1] = info.rating
 	order[#order + 1] = info.num_ratings or ""
-	order[#order + 1] = info.id or book.id or ""
-	order[#order + 1] = info.url or book.url
+	order[#order + 1] = book.id or info.id or ""
+	order[#order + 1] = book.url or info.url
 
 	return "| " .. table.concat(order, " | ") .. " | "
 end

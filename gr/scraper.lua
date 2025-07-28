@@ -64,6 +64,8 @@ function scraper.audit_book(orig)
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
 
+	-- https://app.thestorygraph.com/browse?search_term= ???
+
 	return book
 end
 
