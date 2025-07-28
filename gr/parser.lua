@@ -361,11 +361,16 @@ function parser.book_details(html)
 	local series = tree:select("div.BookPageTitleSection__title h3 a")
 
 	if #series > 0 then
-		local serie = series[1]:getcontent():gsub("&#x27;", "’"):gsub("%s*#.*", "")
+		local series_info = series[1]:getcontent():gsub("&#x27;", "’"):gsub("'", "’")
+		local serie = series_info:gsub("%s*#.*", "")
 
 		if serie then
 			details.series = serie:gsub("%s+$", "")
-			details.volume = series[1]:getcontent():match("#(%d+%S)")
+
+			if series_info:match("#([^#]+)") then
+				local volume = series_info:gsub(".*#", "")
+				details.volume = volume
+			end
 		else
 			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
 		end

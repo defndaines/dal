@@ -17,13 +17,13 @@ assert(
 
 -- More Complicated Book Link
 
-local file = io.open("spec/lighthouse.html", "r")
-local search_html = file:read("*a")
+file = io.open("spec/lighthouse.html", "r")
+search_html = file:read("*a")
 file:close()
 
-local title = "To the Lighthouse"
-local author = "Virginia Woolf"
-local book_link = parser.book_link(search_html, title, author)
+title = "To the Lighthouse"
+author = "Virginia Woolf"
+book_link = parser.book_link(search_html, title, author)
 
 assert(
 	-- "https://www.goodreads.com/book/show/59716.To_the_Lighthouse" == book_link,
@@ -33,13 +33,13 @@ assert(
 
 -- Author Name Has Hyphen
 
-local file = io.open("spec/City-of-Ash-and-Red.html", "r")
-local search_html = file:read("*a")
+file = io.open("spec/City-of-Ash-and-Red.html", "r")
+search_html = file:read("*a")
 file:close()
 
-local title = "City of Ash and Red"
-local author = "Hye-Young Pyun"
-local book_link = parser.book_link(search_html, title, author)
+title = "City of Ash and Red"
+author = "Hye-Young Pyun"
+book_link = parser.book_link(search_html, title, author)
 
 assert(
 	"https://www.goodreads.com/book/show/39331853-city-of-ash-and-red" == book_link,
@@ -48,13 +48,13 @@ assert(
 
 -- Author Name Has Extra Spaces
 
-local file = io.open("spec/Remember-You-Will-Die.html", "r")
-local search_html = file:read("*a")
+file = io.open("spec/Remember-You-Will-Die.html", "r")
+search_html = file:read("*a")
 file:close()
 
-local title = "Remember You Will Die"
-local author = "Eden Robins"
-local book_link = parser.book_link(search_html, title, author)
+title = "Remember You Will Die"
+author = "Eden Robins"
+book_link = parser.book_link(search_html, title, author)
 
 assert(
 	"https://www.goodreads.com/book/show/203751806-remember-you-will-die" == book_link,
@@ -64,13 +64,13 @@ assert(
 -- When the Search Title Is WaCkY!
 --   -> [(Girl in a Band)] [Author: Kim Gordon] published on (February, 2015)
 
-local file = io.open("spec/Girl-in-a-Band.html", "r")
-local search_html = file:read("*a")
+file = io.open("spec/Girl-in-a-Band.html", "r")
+search_html = file:read("*a")
 file:close()
 
-local title = "Girl in a Band"
-local author = "Kim Gordon"
-local book_link = parser.book_link(search_html, title, author)
+title = "Girl in a Band"
+author = "Kim Gordon"
+book_link = parser.book_link(search_html, title, author)
 
 assert(
 	"https://www.goodreads.com/book/show/159719031-girl-in-a-band-author" == book_link,
@@ -104,7 +104,7 @@ assert(country == "U.S.", "Nnedi Okorafor’s birthplace: " .. country)
 
 -- Test Another Author
 file = io.open("spec/sohn-won-pyung.html", "r")
-local author_html = file:read("*a")
+author_html = file:read("*a")
 file:close()
 
 country = parser.author_details(author_html)
@@ -112,8 +112,35 @@ assert(country == "South Korea", "Sohn Won-Pyung’s birthplace: " .. country)
 
 -- Test Author with No Birth Info
 file = io.open("spec/caitlin-yarsky.html", "r")
-local author_html = file:read("*a")
+author_html = file:read("*a")
 file:close()
 
 country = parser.author_details(author_html)
-assert(country == nil, "Caitlin Yarsky’s birthplace: " .. (country or "nil"))
+assert(not country, "Caitlin Yarsky’s birthplace: " .. (country or "nil"))
+
+-- Test Series
+file = io.open("spec/city-of-stairs.html", "r")
+book_html = file:read("*a")
+file:close()
+
+details = parser.book_details(book_html)
+assert(details.series == "The Divine Cities", "series was '" .. details.series .. "'")
+assert(details.volume == "1", "volume was '" .. details.volume .. "'")
+
+-- Test Series with Decimal
+file = io.open("spec/after-the-coup.html", "r")
+book_html = file:read("*a")
+file:close()
+
+details = parser.book_details(book_html)
+assert(details.series == "Old Man’s War", "series was '" .. details.series .. "'")
+assert(details.volume == "4.5", "volume was '" .. details.volume .. "'")
+
+-- Test Series without Volume
+file = io.open("spec/jayber-crow.html", "r")
+book_html = file:read("*a")
+file:close()
+
+details = parser.book_details(book_html)
+assert(details.series == "Port William", "series was '" .. details.series .. "'")
+assert(not details.volume, "volume was '" .. (details.volume or "nil") .. "'")
