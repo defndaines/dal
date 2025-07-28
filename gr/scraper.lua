@@ -69,7 +69,7 @@ function scraper.audit_book(orig)
 	return book
 end
 
-function scraper.get_book_info(title, author)
+function scraper.get_book_info(title, author, is_search)
 	local s_title = title:gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " ")
 	local query = urlencode(s_title .. " " .. s_author)
@@ -106,11 +106,10 @@ function scraper.get_book_info(title, author)
 	local book = parser.book_details(html)
 	book.url = book_url
 
-	if book.title ~= title then
+	if not is_search and book.title ~= title then
 		print("INFO:", "original title '" .. title .. "' differs from " .. book.title)
+		book.title = title
 	end
-
-	book.title = title
 
 	if book.author ~= author then
 		print("INFO:", "original author '" .. author .. "' differs from " .. book.author)
@@ -121,6 +120,8 @@ function scraper.get_book_info(title, author)
 
 		if html then
 			book.country = parser.author_details(html)
+		else
+			print("WARNING:", err)
 		end
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
