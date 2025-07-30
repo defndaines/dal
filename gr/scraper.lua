@@ -36,14 +36,14 @@ local function fetch_url(url)
 end
 
 function scraper.audit_book(orig)
-	html, err = fetch_url(orig.url)
+	local html, err = fetch_url(orig.url)
 
 	if not html then
 		return nil, "Book page fetch error: " .. err
 	end
 
 	local book = parser.book_details(html)
-	book.url = book_url
+	book.url = orig.url
 
 	if book.title ~= orig.title then
 		print("INFO:", "original title '" .. orig.title .. "' differs from '" .. book.title .. "'")
@@ -56,7 +56,7 @@ function scraper.audit_book(orig)
 	end
 
 	if book.author_link then
-		html, err = fetch_url(book.author_link)
+		html = fetch_url(book.author_link)
 
 		if html then
 			book.country = parser.author_details(html)

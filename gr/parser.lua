@@ -91,6 +91,7 @@ local ignore_genres = {
 	["cycling"] = true,
 	["dark fantasy"] = true,
 	["death"] = true,
+	["denmark"] = true,
 	["design"] = true,
 	["dinosaurs"] = true,
 	["dragonlance"] = true,
