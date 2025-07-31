@@ -13,8 +13,10 @@ local book = overdrive.parse_results(search_html, title, author)
 assert(book.title == "Stay True: A Memoir", "Book title does not match: " .. book.title)
 assert(book.author == author, "Book author does not match: " .. book.author)
 assert(book.duration == "05:29", "Book duration does not match: " .. book.duration)
-assert(table.concat(book.awards, ", ") == "Pulitzer Prize, National Book Critics Circle Award", "Book awards do not match: " .. table.concat(book.awards, ", "))
-
+assert(
+	table.concat(book.awards, ", ") == "Pulitzer Prize, National Book Critics Circle Award",
+	"Book awards do not match: " .. table.concat(book.awards, ", ")
+)
 
 -- multiple results, including unrelated
 
@@ -50,3 +52,14 @@ search_html = file:read("*a")
 file:close()
 
 assert(not overdrive.parse_results(search_html, title, author))
+
+-- duration rolls over the hour
+
+title = "Maeve Fly"
+author = "C.J. Leede"
+file = io.open("spec/Maeve-Fly.html", "r")
+local html = file:read("*a")
+file:close()
+
+book = overdrive.parse_results(html, title, author)
+assert(book.duration == "08:00", "Book duration does not match: " .. book.duration)

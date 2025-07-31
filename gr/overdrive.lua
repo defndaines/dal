@@ -63,7 +63,7 @@ local function select_book(results, title, author)
 	for _, book in pairs(results) do
 		local score = 0
 
-		if book.title:gsub("'", "’"):sub(1, #title) == title then
+		if book.title:lower():gsub("'", "’"):sub(1, #title) == title:lower() then
 			score = score + 1
 		else
 			score = score - 2
@@ -161,7 +161,9 @@ function overdrive.parse_results(html, title, author)
 				end
 			end
 
-			ret.awards = awards
+			if #awards > 0 then
+				ret.awards = awards
+			end
 		end
 
 		return ret
@@ -171,8 +173,8 @@ function overdrive.parse_results(html, title, author)
 end
 
 function overdrive.search(title, author)
-	local s_title = title:gsub("['’]s%s", " "):gsub("%p", " ")
-	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", "")
+	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
+	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
 	local query = urlencode(s_title .. " " .. s_author)
 	local search_url = "https://lapl.overdrive.com/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
 
