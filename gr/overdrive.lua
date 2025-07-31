@@ -171,7 +171,7 @@ function overdrive.parse_results(html, title, author)
 end
 
 function overdrive.search(title, author)
-	local s_title = title:gsub(":", "")
+	local s_title = title:gsub("['’]s%s", " "):gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", "")
 	local query = urlencode(s_title .. " " .. s_author)
 	local search_url = "https://lapl.overdrive.com/search?query=" .. query .. "&format=audiobook-overdrive&language=en"

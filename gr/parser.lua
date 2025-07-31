@@ -169,7 +169,6 @@ local ignore_genres = {
 	["mozambique"] = true,
 	["music biography"] = true,
 	["mystery thriller"] = true,
-	["native americans"] = true,
 	["new weird"] = true,
 	["new york"] = true,
 	["nigeria"] = true,
@@ -372,8 +371,8 @@ function parser.book_details(html)
 			:gsub("holocaust", "Holocaust")
 			:gsub("jewish", "Jewish")
 			:gsub("lgbt", "LGBT")
-			:gsub("native american", "Native American")
 			:gsub("native americans", "Native American")
+			:gsub("native american", "Native American")
 			:gsub("southern", "Southern")
 			:gsub("young adult", "YA")
 			:gsub("post apocalyptic", "post-apocalyptic")
