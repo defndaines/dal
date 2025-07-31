@@ -63,7 +63,7 @@ local function select_book(results, title, author)
 	for _, book in pairs(results) do
 		local score = 0
 
-		if book.title:sub(1, #title) == title then
+		if book.title:gsub("'", "’"):sub(1, #title) == title then
 			score = score + 1
 		else
 			score = score - 2
@@ -93,6 +93,41 @@ local function select_book(results, title, author)
 	return winner
 end
 
+local ignored_awards = {
+	["Amazing Audiobooks for Young Adults"] = true,
+	["American Indian Youth Literature Award Honor"] = true,
+	["Audie Award Nominee"] = true,
+	["Audie Award"] = true,
+	["Best Audio Books"] = true,
+	["Best Audiobooks"] = true,
+	["Best Fiction for Young Adults"] = true,
+	["Bram Stoker Award Nominee"] = true,
+	["Damon Knight Memorial Grand Master Award"] = true,
+	["Edgar Allan Poe Award Finalist"] = true,
+	["Edgar nominee"] = true,
+	["Excellence in Nonfiction for Young Adults"] = true,
+	["Grand Master Award"] = true,
+	["Hugo Award Nominee"] = true,
+	["Ian Fleming Steel Dagger"] = true,
+	["Libby Award Finalist"] = true,
+	["Libby Award Winner"] = true,
+	["Listen Up Award"] = true,
+	["Man Booker Prize for Fiction Nominee"] = true,
+	["National Book Award Finalist"] = true,
+	["National Book Critics Circle Award Finalist"] = true,
+	["Nebula Nominee"] = true,
+	["Notable Books for Adults"] = true,
+	["Notable Children's Recordings"] = true,
+	["Pulitzer Prize Finalist"] = true,
+	["Romantic Times Career Achievement Award Winner"] = true,
+	["Romantic Times Reviewers' Choice Award Winner - Best Book"] = true,
+	["Scotiabank Giller Prize Nominee"] = true,
+	["Stonewall Honor Book Award"] = true,
+	["Teens' Top Ten"] = true,
+	["William C. Morris Debut Young Adult Award"] = true,
+	["Young Adult Favorites Award"] = true,
+}
+
 function overdrive.parse_results(html, title, author)
 	local results = html:match("window%.OverDrive%.mediaItems = ({.-});%s*window%.OverDrive%.")
 	local decoded = json.decode(results)
@@ -115,7 +150,13 @@ function overdrive.parse_results(html, title, author)
 			local awards = {}
 
 			for _, award in ipairs(book.awards) do
-				if award.source ~= "The New York Times" then
+				if award.description == "Nobel Prize in Literature Awarded Author" then
+					awards[#awards + 1] = "Nobel"
+				elseif award.description == "Man Booker Prize for Fiction" then
+					awards[#awards + 1] = "Booker Prize"
+				elseif awards.description == "Andre Norton Nebula Award for Middle Grade and Young Adult Fiction" then
+					awards[#awards + 1] = "Nebula Award"
+				elseif not ignored_awards[award.description] and award.source ~= "The New York Times" then
 					awards[#awards + 1] = award.description
 				end
 			end
