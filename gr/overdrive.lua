@@ -3,6 +3,10 @@ local overdrive = {}
 --[[
   Uses LAPL’s overdrive, https://lapl.overdrive.com/search
 
+  Some other options to look into implementing:
+  - https://lacountylibrary.overdrive.com/
+  - https://hcpl.overdrive.com/
+
   Could cascade to searching other overdrive accounts as needed, since there
   are some books not available from Overdrive but which are available from
   other libraries.
