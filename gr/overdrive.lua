@@ -1,10 +1,6 @@
 local overdrive = {}
 
 --[[
-  Install libraries:
-    luarocks install luasocket
-    luarocks install luasec
-
   Uses LAPL’s overdrive, https://lapl.overdrive.com/search
 
   Could cascade to searching other overdrive accounts as needed, since there
@@ -12,32 +8,8 @@ local overdrive = {}
   other libraries.
 ]]
 
-local https = require("ssl.https")
-local ltn12 = require("ltn12")
+local spider = require("spider")
 local json = require("json")
-
-local function urlencode(str)
-	return str:gsub("([^%w _%%%-%.~])", function(c)
-		return string.format("%%%02X", string.byte(c))
-	end):gsub(" ", "+")
-end
-
-local function fetch_url(url)
-	local response = {}
-
-	local result, status_code = https.request({
-		url = url,
-		method = "GET",
-		headers = { ["User-Agent"] = "Mozilla/5.0" },
-		sink = ltn12.sink.table(response),
-	})
-
-	if result and status_code == 200 then
-		return table.concat(response)
-	else
-		return nil, status_code
-	end
-end
 
 local function format_duration(duration)
 	local h, m, s = duration:match("(%d%d):(%d%d):(%d%d)")
@@ -175,10 +147,10 @@ end
 function overdrive.search(title, author)
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
-	local query = urlencode(s_title .. " " .. s_author)
+	local query = spider.urlencode(s_title .. " " .. s_author)
 	local search_url = "https://lapl.overdrive.com/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
 
-	local html, err = fetch_url(search_url)
+	local html, err = spider.fetch_url(search_url)
 
 	-- print(search_url)
 	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-search.html", "w")

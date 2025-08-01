@@ -7,36 +7,11 @@ local scraper = {}
   https://www.goodreads.com/book/show/<book-id>
 ]]
 
-local https = require("ssl.https")
-local ltn12 = require("ltn12")
+local spider = require("spider")
 local parser = require("parser")
 
-local function urlencode(str)
-	return str:gsub("([^%w _%%%-%.~])", function(c)
-		return string.format("%%%02X", string.byte(c))
-	end):gsub(" ", "+")
-end
-
--- Get HTML content from a URL
-local function fetch_url(url)
-	local response = {}
-
-	local result, status_code = https.request({
-		url = url,
-		method = "GET",
-		headers = { ["User-Agent"] = "Mozilla/5.0" },
-		sink = ltn12.sink.table(response),
-	})
-
-	if result and status_code == 200 then
-		return table.concat(response)
-	else
-		return nil, status_code
-	end
-end
-
 function scraper.audit_book(orig)
-	local html, err = fetch_url(orig.url)
+	local html, err = spider.fetch_url(orig.url)
 
 	if not html then
 		return nil, "Book page fetch error: " .. err
@@ -56,7 +31,7 @@ function scraper.audit_book(orig)
 	end
 
 	if book.author_link then
-		html = fetch_url(book.author_link)
+		html = spider.fetch_url(book.author_link)
 
 		if html then
 			book.country = parser.author_details(html)
@@ -72,11 +47,11 @@ end
 function scraper.get_book_info(title, author, is_search)
 	local s_title = title:gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " ")
-	local query = urlencode(s_title .. " " .. s_author)
+	local query = spider.urlencode(s_title .. " " .. s_author)
 	local search_url = "https://www.goodreads.com/search?q=" .. query
 
 	local html, err
-	html, err = fetch_url(search_url)
+	html, err = spider.fetch_url(search_url)
 
 	if not html then
 		return nil, "Search fetch error: " .. err
@@ -93,7 +68,7 @@ function scraper.get_book_info(title, author, is_search)
 		return nil, "Book link not found."
 	end
 
-	html, err = fetch_url(book_url)
+	html, err = spider.fetch_url(book_url)
 
 	if not html then
 		return nil, "Book page fetch error: " .. err
@@ -116,7 +91,7 @@ function scraper.get_book_info(title, author, is_search)
 	end
 
 	if book.author_link then
-		html, err = fetch_url(book.author_link)
+		html, err = spider.fetch_url(book.author_link)
 
 		if html then
 			book.country = parser.author_details(html)

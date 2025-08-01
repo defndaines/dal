@@ -105,23 +105,15 @@ function data.output_book(book, info)
 		end
 	end
 
-	if info.series then
-		local series_tag = info.series:lower():gsub(",", ""):gsub("%s+", "-")
-
-		if info.volume then
-			series_tag = series_tag .. "-" .. info.volume
-		end
-
-		if not tag_set[series_tag] then
-			tags[#tags + 1] = info.series:lower():gsub("%s", "-")
-		end
-	end
-
 	order[#order + 1] = table.concat(tags, ", ")
 	order[#order + 1] = info.rating
 	order[#order + 1] = info.num_ratings or ""
 	order[#order + 1] = book.id or info.id or ""
 	order[#order + 1] = book.url or info.url
+
+	if book.audible then
+		order[#order] = order[#order] .. " ; " .. book.audible
+	end
 
 	return "| " .. table.concat(order, " | ") .. " |"
 end

@@ -410,20 +410,22 @@ function parser.book_details(html)
 
 		if serie then
 			details.series = serie:gsub("%s+$", "")
+			local series_tag = serie:lower():gsub(",", ""):gsub("%s+$", ""):gsub("%s+", "-")
 
 			if series_info:match("#([^#]+)") then
 				local volume = series_info:gsub(".*#", "")
 				details.volume = volume
+				series_tag = series_tag .. "-" .. volume
 			end
+
+			details.tags[#details.tags + 1] = series_tag
 		else
 			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
 		end
+
+		-- print("series: ", details.series)
+		-- print("volume: ", details.volume)
 	end
-
-	-- print("series: ", details.series)
-	-- print("volume: ", details.volume)
-
-	-- TODO: Check awards. Remove nominations, just want wins. "Literary awards"
 
 	return details
 end
