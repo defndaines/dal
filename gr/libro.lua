@@ -50,15 +50,24 @@ function libro.find_book(html, title, author)
 			local book_info = result:select("div.audiobook-info p.one-line")
 			if book_info and #book_info > 0 then
 				for i, p in ipairs(book_info) do
-					local h, m = p:getcontent():match("(%d+) hours? (%d+) minute")
+					local content = p:getcontent()
+					local h = content:match("(%d+) hours?")
+					local m = content:match("(%d+) minutes?")
 
-					if h and m then
-						h = tonumber(h)
-						m = tonumber(m)
+					if h or m then
+						h = tonumber(h or 0)
+						m = tonumber(m or 0)
 						book.hours = string.format("%02d:%02d", h, m)
-					elseif p:getcontent():match("Abridged:.*No") then
+					elseif content:match("Abridged:.*No") then
 						score = score + 1
 						book.unabridged = true
+					elseif content:match("Length:.*TBA") then
+						book.hours = "##:##"
+					end
+				end
+				if not book.hours then
+					for i, p in ipairs(book_info) do
+						print("debug", p:getcontent())
 					end
 				end
 			end
@@ -79,7 +88,7 @@ function libro.search(title, author)
 	local query = spider.urlencode(s_title .. " " .. s_author)
 	local search_url = "https://libro.fm/search?q=" .. query .. "&searchby=all&sortby=relevance&language_eng=true"
 
-	print(search_url)
+	-- print(search_url)
 
 	local html, err = spider.fetch_url(search_url)
 
@@ -88,25 +97,7 @@ function libro.search(title, author)
 		-- file:write(html)
 		-- file:close()
 
-		local book = libro.find_book(html, title, author)
-
-		if book then
-			local url = "https://www.libro.fm" .. book
-
-			html, err = spider.fetch_url(url)
-
-			if html then
-				-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
-				-- file:write(html)
-				-- file:close()
-
-				local duration = libro.find_duration(html)
-
-				return { title = title, author = author, hours = duration, libro = url }
-			else
-				return nil, "Search fetch error: " .. err
-			end
-		end
+		return libro.find_book(html, title, author)
 	else
 		return nil, "Search fetch error: " .. err
 	end
@@ -120,6 +111,30 @@ end
 --     assert(book.title == title)
 --     assert(book.author == author)
 --     assert(book.hours == "01:04")
+-- end
+
+local data = require("data")
+
+-- local path = "../../kiroku/data/ebooks.md"
+-- local books = data.parse(path)
+-- local outfile = "/tmp/" .. path:gsub(".*/", "")
+-- local fout = io.open(outfile, "a+")
+
+-- for _, book in pairs(books) do
+--     local audio = libro.search(book.title, book.author)
+--     if audio then
+--         print(
+--             "| "
+--                 .. audio.title
+--                 .. " | "
+--                 .. (audio.author or book.author)
+--                 .. " | "
+--                 .. audio.hours
+--                 .. " | "
+--                 .. audio.libro
+--                 .. " |"
+--         )
+--     end
 -- end
 
 return libro
