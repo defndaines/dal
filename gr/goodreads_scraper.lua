@@ -1,6 +1,7 @@
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
+local libro = require("libro")
 local audible = require("audible")
 
 local path = "../../kiroku/data/audiobooks.md"
@@ -19,18 +20,21 @@ for _, book in pairs(books) do
 
 	if info then
 		local has_audio = false
+		local has_libro = false
 		local has_audible = false
 
 		for _, tag in ipairs(book.tags) do
 			if tag == "[audio available]" then
 				has_audio = true
+			elseif tag == "[Libro]" then
+				has_libro = true
 			elseif tag == "[Audible]" then
 				has_audible = true
 			end
 		end
 
 		if not has_audio then
-			local audiobook = overdrive.search(info.title, info.author)
+			local audiobook = overdrive.search_libraries(info.title, info.author)
 
 			if audiobook then
 				book.hours = audiobook.duration
@@ -41,13 +45,23 @@ for _, book in pairs(books) do
 					end
 				end
 			else
+				if not has_libro then
+					audiobook = libro.search(book.title, book.author)
+
+					if audiobook then
+						book.hours = audiobook.hours
+						book.tags[#book.tags + 1] = "[Libro]"
+						book.url = book.url .. " ; " .. audiobook.libro
+					end
+				end
+
 				if not has_audible then
 					audiobook = audible.search(info.title, info.author)
 
 					if audiobook and audiobook.hours then
 						book.hours = audiobook.hours
 						book.tags[#book.tags + 1] = "[Audible]"
-						book.audible = audiobook.audible
+						book.url = book.url .. " ; " .. audiobook.audible
 					end
 				end
 			end

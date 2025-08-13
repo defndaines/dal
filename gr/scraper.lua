@@ -11,7 +11,8 @@ local spider = require("spider")
 local parser = require("parser")
 
 function scraper.audit_book(orig)
-	local html, err = spider.fetch_url(orig.url)
+	local gr_url = orig.url:gsub(" ;.*", "")
+	local html, err = spider.fetch_url(gr_url)
 
 	if not html then
 		return nil, "Book page fetch error: " .. err
@@ -21,7 +22,10 @@ function scraper.audit_book(orig)
 	book.url = orig.url
 
 	if book.title ~= orig.title then
-		print("INFO:", "original title '" .. orig.title .. "' differs from '" .. book.title .. "'")
+		print(
+			"INFO:",
+			"original title '" .. (orig.title or "nil") .. "' differs from '" .. (book.title or "nil") .. "'"
+		)
 	end
 
 	book.title = orig.title
