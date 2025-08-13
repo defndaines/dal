@@ -59,14 +59,14 @@ function audible.search(title, author)
 	local html, err = spider.fetch_url(search_url)
 
 	if html then
-		local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-search.html", "w")
-		file:write(html)
-		file:close()
+		-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-audible-search.html", "w")
+		-- file:write(html)
+		-- file:close()
 
 		local link = audible.find_link(html, title, author)
 
 		if link then
-			local url = "https://www.amazon.com/" .. link
+			local url = "https://www.amazon.com" .. link
 
 			html, err = spider.fetch_url(url)
 

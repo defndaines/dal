@@ -65,6 +65,7 @@ function libro.find_book(html, title, author)
 						book.hours = "##:##"
 					end
 				end
+
 				if not book.hours then
 					for i, p in ipairs(book_info) do
 						print("debug", p:getcontent())

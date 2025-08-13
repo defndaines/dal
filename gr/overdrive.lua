@@ -1,7 +1,7 @@
 local overdrive = {}
 
 --[[
-  Uses LAPL’s overdrive, https://lapl.overdrive.com/search
+  Uses LAPL’s overdrive by default, https://lapl.overdrive.com/search
 
   Some other options to look into implementing:
   - https://lacountylibrary.overdrive.com/
@@ -11,6 +11,12 @@ local overdrive = {}
   are some books not available from Overdrive but which are available from
   other libraries.
 ]]
+
+overdrive.lapl_url = "https://lapl.overdrive.com"
+overdrive.lacountylibrary_url = "https://lacountylibrary.overdrive.com"
+overdrive.hcpl_url = "https://hcpl.overdrive.com"
+overdrive.smpl_url = "https://santamonica.overdrive.com"
+overdrive.tpl_url = "https://torrance.overdrive.com"
 
 local spider = require("spider")
 local json = require("json")
@@ -148,11 +154,12 @@ function overdrive.parse_results(html, title, author)
 	end
 end
 
-function overdrive.search(title, author)
+function overdrive.search(title, author, overdrive_url)
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
 	local query = spider.urlencode(s_title .. " " .. s_author)
-	local search_url = "https://lapl.overdrive.com/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
+	overdrive_url = overdrive_url or overdrive.lapl_url
+	local search_url = overdrive_url .. "/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
 
 	local html, err = spider.fetch_url(search_url)
 
@@ -166,6 +173,26 @@ function overdrive.search(title, author)
 	else
 		return nil, "Search fetch error: " .. err
 	end
+end
+
+function overdrive.search_libraries(title, author)
+	local urls = {
+		overdrive.lapl_url,
+		overdrive.lacountylibrary_url,
+		overdrive.hcpl_url,
+		overdrive.smpl_url,
+		overdrive.tpl_url,
+	}
+
+	local i = 1
+	local audiobook
+
+	repeat
+		audiobook = overdrive.search(title, author, urls[i])
+		i = i + 1
+	until audiobook or i > #urls
+
+	return audiobook
 end
 
 -- local book = overdrive.search("Stay True", "Hua Hsu") -- single result, includes awards

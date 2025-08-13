@@ -86,7 +86,7 @@ function scraper.get_book_info(title, author, is_search)
 		book.title = title
 	end
 
-	if book.author ~= author then
+	if not is_search and book.author ~= author then
 		print("INFO:", "original author '" .. author .. "' differs from " .. book.author)
 	end
 
