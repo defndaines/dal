@@ -150,9 +150,9 @@ assert(not details.volume, "volume was '" .. (details.volume or "nil") .. "'")
 
 -- Don't Double Print Series Information
 local series_re = "the%-stormlight%-archive%-1"
-local line = "| The Way of Kings | Brandon Sanderson | 2010 | U.S. | 1007 | 46 "
-	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 625908 | 7235533 "
-	.. "| https://www.goodreads.com/book/show/7235533-the-way-of-kings |"
+local line = "| The Way of Kings | Brandon Sanderson | 2010 | U.S. | 1007 | 45:30 "
+	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 631018 "
+	.. "| [7235533](https://www.goodreads.com/book/show/7235533-the-way-of-kings) |"
 local book = data.parse_audio_book(line)
 
 file = io.open("spec/The-Way-of-Kings.html", "r")
@@ -163,4 +163,4 @@ local info = parser.book_details(book_html)
 local output = data.output_book(book, info)
 
 assert(not output:gsub(series_re, "", 1):match(series_re), "series tag appears more than once")
-assert(output == line)
+assert(output == line, "\n" .. output .. "\n  does not match\n" .. line)

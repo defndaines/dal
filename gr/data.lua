@@ -12,7 +12,7 @@ end
 
 function data.parse_audio_book(line)
 	local title, author, year, country, pages, hours, list, rating, num_ratings, id, url =
-		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) |")
+		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | %[(.+)%]%((.+)%) |")
 
 	return {
 		title = title,
@@ -108,12 +108,7 @@ function data.output_book(book, info)
 	order[#order + 1] = table.concat(tags, ", ")
 	order[#order + 1] = info.rating
 	order[#order + 1] = info.num_ratings or ""
-	order[#order + 1] = book.id or info.id or ""
-	order[#order + 1] = book.url or info.url
-
-	if book.audible then
-		order[#order] = order[#order] .. " ; " .. book.audible
-	end
+	order[#order + 1] = "[" .. (book.id or info.id or "") .. "](" .. (book.url or info.url) .. ")"
 
 	return "| " .. table.concat(order, " | ") .. " |"
 end
@@ -134,8 +129,7 @@ function data.output(book)
 	order[#order + 1] = table.concat(book.tags, ", ")
 	order[#order + 1] = book.rating
 	order[#order + 1] = book.num_ratings or ""
-	order[#order + 1] = book.id or ""
-	order[#order + 1] = book.url
+	order[#order + 1] = "[" .. (book.id or "") .. "](" .. book.url .. ")"
 
 	return "| " .. table.concat(order, " | ") .. " | "
 end

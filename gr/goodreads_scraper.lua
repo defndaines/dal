@@ -1,7 +1,6 @@
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
-local libro = require("libro")
 local audible = require("audible")
 
 local path = "../../kiroku/data/audiobooks.md"
@@ -19,16 +18,18 @@ for _, book in pairs(books) do
 	info, err = scraper.audit_book(book)
 
 	if info then
-		local has_audio = false
-		local has_libro = false
+		local has_audio = book.hours or info.hours
 		local has_audible = false
 
 		for _, tag in ipairs(book.tags) do
 			if tag == "[audio available]" then
 				has_audio = true
-			elseif tag == "[Libro]" then
-				has_libro = true
-			elseif tag == "[Audible]" then
+			elseif tag:sub(1, 8) == "[hoopla]" then
+				has_audio = true
+			elseif tag:sub(1, 9) == "[Spotify]" then
+				has_audio = true
+			elseif tag:sub(1, 9) == "[Audible]" then
+				has_audio = true
 				has_audible = true
 			end
 		end
@@ -38,31 +39,12 @@ for _, book in pairs(books) do
 
 			if audiobook then
 				book.hours = audiobook.duration
+			elseif not has_audible then
+				audiobook = audible.search(info.title, info.author)
 
-				if audiobook.awards then
-					for _, award in ipairs(audiobook.awards) do
-						book.tags[#book.tags + 1] = award
-					end
-				end
-			else
-				if not has_libro then
-					audiobook = libro.search(book.title, book.author)
-
-					if audiobook then
-						book.hours = audiobook.hours
-						book.tags[#book.tags + 1] = "[Libro]"
-						book.url = book.url .. " ; " .. audiobook.libro
-					end
-				end
-
-				if not has_audible then
-					audiobook = audible.search(info.title, info.author)
-
-					if audiobook and audiobook.hours then
-						book.hours = audiobook.hours
-						book.tags[#book.tags + 1] = "[Audible]"
-						book.url = book.url .. " ; " .. audiobook.audible
-					end
+				if audiobook and audiobook.hours then
+					book.hours = audiobook.hours
+					book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
 				end
 			end
 		end
