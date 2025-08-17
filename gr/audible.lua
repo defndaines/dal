@@ -53,6 +53,10 @@ function audible.search(title, author)
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
 	local query = spider.urlencode(s_title .. " " .. s_author)
+	-- TODO: Instead, search audible directly:
+		-- feature six is English
+		-- feature nine is Unabridged
+	-- "https://www.audible.com/search?feature_six_browse-bin=18685580011&feature_nine_browse-bin=18685524011&i=na-audible-us&keywords=" .. query
 	local search_url = "https://www.amazon.com/s?k=" .. query .. "&i=audible"
 	-- print(search_url)
 
