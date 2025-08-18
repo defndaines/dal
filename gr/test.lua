@@ -160,7 +160,8 @@ book_html = file:read("*a")
 file:close()
 
 local info = parser.book_details(book_html)
-local output = data.output_book(book, info)
+book = data.merge(book, info)
+local output = data.output(book)
 
 assert(not output:gsub(series_re, "", 1):match(series_re), "series tag appears more than once")
 assert(output == line, "\n" .. output .. "\n  does not match\n" .. line)

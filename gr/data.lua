@@ -31,7 +31,7 @@ end
 
 local function parse_book(line)
 	local title, author, year, country, pages, list, rating, num_ratings, id, url =
-		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) |")
+		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | %[(.+)%]%((.+)%) |")
 
 	return {
 		title = title,
@@ -80,37 +80,20 @@ function data.parse(file)
 	return books
 end
 
-function data.output_book(book, info)
-	local order = {}
-	order[#order + 1] = book.title or info.title
-	order[#order + 1] = book.author or info.author
-	order[#order + 1] = book.year or info.year
-	order[#order + 1] = book.country or info.country or "XXX"
-	order[#order + 1] = book.pages or info.pages or ""
-
-	if book.hours then
-		order[#order + 1] = book.hours
-	end
-
-	local tags = book.tags or {}
-	local tag_set = {}
-
-	for _, tag in ipairs(book.tags) do
-		tag_set[tag] = true
-	end
-
-	for _, tag in ipairs(info.tags) do
-		if not tag_set[tag] then
-			tags[#tags + 1] = tag
-		end
-	end
-
-	order[#order + 1] = table.concat(tags, ", ")
-	order[#order + 1] = info.rating
-	order[#order + 1] = info.num_ratings or ""
-	order[#order + 1] = "[" .. (book.id or info.id or "") .. "](" .. (book.url or info.url) .. ")"
-
-	return "| " .. table.concat(order, " | ") .. " |"
+function data.merge(book, info)
+	return {
+		title = book.title or info.title,
+		author = book.author or info.author,
+		year = book.year or info.year,
+		country = book.country or info.country,
+		pages = book.pages or info.pages,
+		hours = book.hours or info.hours,
+		tags  = book.tags,
+		rating = info.rating,
+		num_ratings = info.num_ratings,
+		id = book.id or info.id,
+		url = book.url or info.url,
+	}
 end
 
 function data.output(book)
@@ -119,7 +102,7 @@ function data.output(book)
 	order[#order + 1] = book.title
 	order[#order + 1] = book.author
 	order[#order + 1] = book.year
-	order[#order + 1] = book.country or "XXX" -- Country still calculated by hand
+	order[#order + 1] = book.country or "XXX" -- Country must still looked up manually
 	order[#order + 1] = book.pages or ""
 
 	if book.hours then
@@ -131,7 +114,7 @@ function data.output(book)
 	order[#order + 1] = book.num_ratings or ""
 	order[#order + 1] = "[" .. (book.id or "") .. "](" .. book.url .. ")"
 
-	return "| " .. table.concat(order, " | ") .. " | "
+	return "| " .. table.concat(order, " | ") .. " |"
 end
 
 return data
