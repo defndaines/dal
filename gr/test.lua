@@ -65,7 +65,7 @@ assert(
 )
 
 -- When the Search Title Is WaCkY!
---   -> [(Girl in a Band)] [Author: Kim Gordon] published on (February, 2015)
+-- -> [(Girl in a Band)] [Author: Kim Gordon] published on (February, 2015)
 
 file = io.open("spec/Girl-in-a-Band.html", "r")
 search_html = file:read("*a")
@@ -80,7 +80,20 @@ assert(
 	"Incorrect book link: " .. book_link
 )
 
+-- Fine tuning results
+
+file = io.open("spec/Stalin-search.html", "r")
+search_html = file:read("*a")
+file:close()
+
+title = "Stalin"
+author = "Leon Trotsky"
+book_link = parser.book_link(search_html, title, author)
+
+assert("https://www.goodreads.com/book/show/184428.Stalin" == book_link, "Incorrect book link: " .. book_link)
+
 -- Test Extracting Book Details
+
 file = io.open("spec/book.html", "r")
 local book_html = file:read("*a")
 file:close()
@@ -164,4 +177,4 @@ book = data.merge(book, info)
 local output = data.output(book)
 
 assert(not output:gsub(series_re, "", 1):match(series_re), "series tag appears more than once")
-assert(output == line, "\n" .. output .. "\n  does not match\n" .. line)
+assert(output == line, "\n" .. output .. "\n does not match\n" .. line)

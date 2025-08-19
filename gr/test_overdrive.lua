@@ -63,3 +63,27 @@ file:close()
 
 book = overdrive.parse_results(html, title, author)
 assert(book.duration == "08:00", "Book duration does not match: " .. book.duration)
+
+-- False positive
+
+title = "The Princess Bride"
+author = "William Goldman"
+file = io.open("spec/The-Princess-Bride-search.html", "r")
+html = file:read("*a")
+file:close()
+
+book = overdrive.parse_results(html, title, author)
+assert(not book)
+
+-- No match
+
+title = "Stalin"
+author = "Leon Trotsky"
+file = io.open("spec/Stalin-overdrive-search.html", "r")
+html = file:read("*a")
+file:close()
+
+book = overdrive.parse_results(html, title, author)
+-- print(book.title, book.author)
+assert(not book)
+

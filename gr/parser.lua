@@ -15,17 +15,49 @@ function parser.book_link(html, title, author)
 
 	local link
 	local highest = 0
+	local last_name = author:match("%S+$")
 
 	for _, book in ipairs(books) do
-		local book_title = book:select("a.bookTitle")
+		local book_title = book:select("a.bookTitle")[1]
+
+		local _title = book_title:select("span")[1]:getcontent():lower()
+
+		if not _title:find(title:lower()) then
+			goto continue
+		elseif _title:find("Summary") then
+			goto continue
+		elseif _title:find("Study Guide") then
+			goto continue
+		end
+
+		local _authors = book:select("div.authorName__container a span")
+		local is_author_found = false
+
+		for _, _author in ipairs(_authors) do
+			local name = _author:getcontent():gsub("%s%s+", " ")
+
+			if name == "Unknown Author" then
+				goto continue
+			elseif name:lower() == author:lower() then
+				is_author_found = true
+			elseif name:find(last_name) then
+				is_author_found = true
+			end
+		end
+
+		if not is_author_found then
+			goto continue
+		end
 
 		local rating = book:select("div span span")[1]:getcontent()
 		local count = rating:match("([%d,]+) ratings?"):gsub(",", "")
 
 		if tonumber(count) > highest then
 			highest = tonumber(count)
-			link = "https://www.goodreads.com" .. book_title[1].attributes["href"]:gsub("?.*", "")
+			link = "https://www.goodreads.com" .. book_title.attributes["href"]:gsub("?.*", "")
 		end
+
+		::continue::
 	end
 
 	return link

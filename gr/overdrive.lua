@@ -41,18 +41,26 @@ end
 local function select_book(results, title, author)
 	local max_score = 0
 	local winner
+	local last_name = author:match("%S+$")
 
 	for _, book in pairs(results) do
-		local score = 0
-
-		if book.title:lower():gsub("'", "’"):sub(1, #title) == title:lower() then
-			score = score + 1
-		else
-			score = score - 2
+		if book.edition ~= "Unabridged" then
+			goto continue
 		end
 
-		if book.edition == "Unabridged" then
+		local score = 0
+
+		local _title = book.title:lower():gsub("'", "’")
+		if _title == title:lower() then
+			score = score + 4
+		elseif _title:sub(1, #title) == title:lower() then
+			score = score + 2
+		elseif _title:find("summary") then
+			goto continue
+		elseif _title:find(title:lower()) then
 			score = score + 1
+		else
+			goto continue
 		end
 
 		-- Favor single narrators over ensemble cast. Fails when more than one author.
@@ -60,16 +68,28 @@ local function select_book(results, title, author)
 			score = score + 1
 		end
 
+		local is_author_found = false
 		for _, creator in ipairs(book.creators) do
-			if creator.role == "Author" and creator.name == author then
-				score = score + 1
+			if creator.role == "Author" then
+				if creator.name == author or creator.name:find(last_name) then
+					score = score + 2
+					is_author_found = true
+				else
+					score = score - 1
+				end
 			end
+		end
+
+		if not is_author_found then
+			goto continue
 		end
 
 		if score > max_score then
 			winner = book
 			max_score = score
 		end
+
+		::continue::
 	end
 
 	return winner
@@ -163,10 +183,12 @@ function overdrive.search(title, author, overdrive_url)
 
 	local html, err = spider.fetch_url(search_url)
 
-	-- print(search_url)
-	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-search.html", "w")
-	-- file:write(html)
-	-- file:close()
+	-- if overdrive_url == overdrive.lapl_url then
+	--     print(search_url)
+	--     local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-overdrive-search.html", "w")
+	--     file:write(html)
+	--     file:close()
+	-- end
 
 	if html then
 		return overdrive.parse_results(html, title, author)
