@@ -55,7 +55,7 @@ function data.parse(file)
 	local _, count = content:gsub("|", "|")
 	local is_audio = false
 
-	if count == 12 then
+	if count == 11 then
 		is_audio = true
 	end
 
