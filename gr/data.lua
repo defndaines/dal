@@ -1,14 +1,6 @@
 local data = {}
 
-local function parse_tags(list)
-	local tags = {}
-
-	for tag in list:gmatch("[^,]+") do
-		tags[#tags + 1] = tag:gsub("^%s+", ""):gsub("%s+$", "")
-	end
-
-	return tags
-end
+local tag = require("tag")
 
 function data.parse_audio_book(line)
 	local title, author, year, country, pages, hours, list, rating, num_ratings, id, url =
@@ -21,7 +13,7 @@ function data.parse_audio_book(line)
 		country = country,
 		pages = pages,
 		hours = hours,
-		tags = parse_tags(list),
+		tags = tag.parse(list),
 		rating = rating,
 		num_ratings = num_ratings,
 		id = id,
@@ -39,7 +31,7 @@ local function parse_book(line)
 		year = year,
 		country = country,
 		pages = pages,
-		tags = parse_tags(list),
+		tags = tag.parse(list),
 		rating = rating,
 		num_ratings = num_ratings,
 		id = id,
@@ -109,7 +101,7 @@ function data.output(book)
 		order[#order + 1] = book.hours
 	end
 
-	order[#order + 1] = table.concat(book.tags, ", ")
+	order[#order + 1] = table.concat(tag.sort(book.tags), ", ")
 	order[#order + 1] = book.rating
 	order[#order + 1] = book.num_ratings or ""
 	order[#order + 1] = "[" .. (book.id or "") .. "](" .. book.url .. ")"
