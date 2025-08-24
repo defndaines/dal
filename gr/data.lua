@@ -72,6 +72,44 @@ function data.parse(file)
 	return books
 end
 
+function data.parse_log(file)
+	local fh = assert(io.open(file, "r"))
+	local line
+
+	repeat
+		line = fh:read("l")
+	until line:find("^|")
+
+	-- skip the header
+	fh:read("*l")
+	line = fh:read("*l")
+
+	local books = {}
+
+	while line do
+		print(line)
+		local title, author, year, country, rating, format, pages, list =
+			line:match("| (.+) | (.+) | (%d%d%d%d) | (.+) | (%d%.%d) | (.+) | (%d+) | (.+) |")
+
+		books[#books + 1] = {
+			title = title,
+			author = author,
+			year = year,
+			country = country,
+			rating = rating,
+			format = format,
+			pages = pages,
+			tags = tag.parse(list),
+		}
+
+		line = fh:read("*l")
+	end
+
+	fh:close()
+
+	return books
+end
+
 function data.merge(book, info)
 	return {
 		title = book.title or info.title,
@@ -80,7 +118,7 @@ function data.merge(book, info)
 		country = book.country or info.country,
 		pages = book.pages or info.pages,
 		hours = book.hours or info.hours,
-		tags  = book.tags,
+		tags = book.tags,
 		rating = info.rating,
 		num_ratings = info.num_ratings,
 		id = book.id or info.id,
@@ -105,6 +143,21 @@ function data.output(book)
 	order[#order + 1] = book.rating
 	order[#order + 1] = book.num_ratings or ""
 	order[#order + 1] = "[" .. (book.id or "") .. "](" .. book.url .. ")"
+
+	return "| " .. table.concat(order, " | ") .. " |"
+end
+
+function data.output_log(book)
+	local order = {}
+
+	order[#order + 1] = book.title
+	order[#order + 1] = book.author
+	order[#order + 1] = book.year
+	order[#order + 1] = book.country
+	order[#order + 1] = book.rating
+	order[#order + 1] = book.format
+	order[#order + 1] = book.pages
+	order[#order + 1] = table.concat(tag.sort(book.tags), ", ")
 
 	return "| " .. table.concat(order, " | ") .. " |"
 end
