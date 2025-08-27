@@ -2,6 +2,7 @@ local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
 local audible = require("audible")
+local socket = require("socket")
 
 local path = "../../kiroku/data/audiobooks.md"
 -- local path = "../../kiroku/data/ebooks.md"
@@ -20,8 +21,8 @@ else
 	fout:write("| --- | --- | :---: | --- | ---: | --- | :---: | ---: | --- |\n")
 end
 
-for _, book in pairs(books) do
-	print("  " .. book.title)
+for i, book in ipairs(books) do
+	print(string.format("%3d", i) .. " " .. book.title)
 
 	info, err = scraper.audit_book(book)
 
@@ -50,7 +51,7 @@ for _, book in pairs(books) do
 		print("ERROR:", err)
 	end
 
-	os.execute("sleep 1")
+	socket.sleep(0.2)
 end
 
 fout:close()
