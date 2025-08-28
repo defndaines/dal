@@ -12,6 +12,7 @@ end
 
 local positions = {
 	["nonfiction"] = 1,
+	["DNF"] = 1,
 	["classics"] = 3,
 	["literary"] = 4,
 	["unread country"] = 15,
