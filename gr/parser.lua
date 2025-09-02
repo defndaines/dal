@@ -365,6 +365,7 @@ function parser.book_details(html)
 	local is_nonfiction = false
 	local is_romantasy = false
 	local is_post_apocalyptic = false
+	local is_world_war = false
 
 	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
 		local g = genre.nodes[1]:getcontent():lower()
@@ -388,6 +389,8 @@ function parser.book_details(html)
 			g = ""
 		elseif g == "romantasy" then
 			is_romantasy = true
+		elseif is_world_war and g == "war" then
+			g = ""
 		end
 
 		if g == "19th century" then
@@ -420,6 +423,18 @@ function parser.book_details(html)
 
 		if not ignore_genres[g] and g ~= "" then
 			table.insert(genres, g)
+			if g:find("WW") then
+				is_world_war = true
+				local war
+				for i, v in ipairs(genres) do
+					if v == "war" then
+						war = i
+					end
+				end
+				if war then
+					table.remove(genres, war)
+				end
+			end
 		end
 	end
 
