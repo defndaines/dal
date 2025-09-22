@@ -22,9 +22,13 @@ else
 end
 
 for i, book in ipairs(books) do
-	print(string.format("%3d", i) .. " " .. book.title)
+	-- print(string.format("%3d", i) .. " " .. book.title)
 
 	info, err = scraper.audit_book(book)
+
+	if math.abs(book.rating - info.rating) > 0.02 then
+		print(string.format("%3d", i) .. " " .. book.title .. ", rating: " .. book.rating .. " -> " .. info.rating)
+	end
 
 	if info then
 		local has_audio = book.hours or info.hours
@@ -48,7 +52,7 @@ for i, book in ipairs(books) do
 		fout:write(data.output(book) .. "\n")
 		fout:flush()
 	else
-		print("ERROR:", err)
+		print("ERROR (" .. i .. "):", err)
 	end
 
 	socket.sleep(0.2)

@@ -21,18 +21,18 @@ function scraper.audit_book(orig)
 	local book = parser.book_details(html)
 	book.url = orig.url
 
-	if book.title ~= orig.title then
-		print(
-			"INFO:",
-			"original title '" .. (orig.title or "nil") .. "' differs from '" .. (book.title or "nil") .. "'"
-		)
-	end
+	-- if book.title ~= orig.title then
+	--     print(
+	--         "INFO:",
+	--         "original title '" .. (orig.title or "nil") .. "' differs from '" .. (book.title or "nil") .. "'"
+	--     )
+	-- end
 
 	book.title = orig.title
 
-	if book.author ~= orig.author then
-		print("INFO:", "original author '" .. orig.author .. "' differs from " .. book.author)
-	end
+	-- if book.author ~= orig.author then
+	--     print("INFO:", "original author '" .. orig.author .. "' differs from " .. book.author)
+	-- end
 
 	if book.author_link then
 		html = spider.fetch_url(book.author_link)
@@ -48,7 +48,7 @@ function scraper.audit_book(orig)
 	return book
 end
 
-function scraper.get_book_info(title, author, is_search)
+function scraper.get_book_info(title, author)
 	local s_title = title:gsub("%p", " ")
 	-- local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " "):gsub("%s%s+", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%s%s+", " ")
@@ -86,14 +86,14 @@ function scraper.get_book_info(title, author, is_search)
 	local book = parser.book_details(html)
 	book.url = book_url
 
-	if not is_search and book.title ~= title then
-		print("INFO:", "original title '" .. title .. "' differs from " .. book.title)
-		book.title = title
-	end
+	-- if not is_search and book.title ~= title then
+	--     print("INFO:", "original title '" .. title .. "' differs from " .. book.title)
+	--     book.title = title
+	-- end
 
-	if not is_search and book.author ~= author then
-		print("INFO:", "original author '" .. author .. "' differs from " .. book.author)
-	end
+	-- if not is_search and book.author ~= author then
+	--     print("INFO:", "original author '" .. author .. "' differs from " .. book.author)
+	-- end
 
 	if book.author_link then
 		html, err = spider.fetch_url(book.author_link)

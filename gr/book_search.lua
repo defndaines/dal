@@ -5,7 +5,7 @@ local data = require("data")
 local overdrive = require("overdrive")
 local audible = require("audible")
 
-local book, err = scraper.get_book_info(arg[1], arg[2], true)
+local book, err = scraper.get_book_info(arg[1], arg[2])
 
 if book then
 	local audiobook = overdrive.search_libraries(book.title, book.author)
