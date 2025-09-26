@@ -26,7 +26,7 @@ for i, book in ipairs(books) do
 
 	info, err = scraper.audit_book(book)
 
-	if math.abs(book.rating - info.rating) > 0.02 then
+	if math.abs(book.rating - (info.rating or book.rating)) > 0.02 then
 		print(string.format("%3d", i) .. " " .. book.title .. ", rating: " .. book.rating .. " -> " .. info.rating)
 	end
 
