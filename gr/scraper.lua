@@ -18,6 +18,10 @@ function scraper.audit_book(orig)
 		return nil, "Book page fetch error: " .. err
 	end
 
+	-- local file = io.open("spec/" .. (orig.title:gsub("%s", "-")) .. ".html", "w")
+	-- file:write(html)
+	-- file:close()
+
 	local book = parser.book_details(html)
 	book.url = orig.url
 

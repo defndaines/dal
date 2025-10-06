@@ -315,16 +315,22 @@ function parser.book_details(html)
 			details.id = data.legacyId
 			details.url = data.webUrl
 
-			if data.bookSeries and data.bookSeries[1].userPosition ~= "" then
+			if data.bookSeries and next(data.bookSeries) ~= nil and data.bookSeries[1].userPosition ~= "" then
 				details.volume = data.bookSeries[1].userPosition
 			end
 
-			for _, entry in ipairs(data.bookGenres) do
-				details.genres[#details.genres + 1] = entry.genre.name:lower()
+			if data.bookGenres then
+				for _, entry in ipairs(data.bookGenres) do
+					details.genres[#details.genres + 1] = entry.genre.name:lower()
+				end
 			end
 
-			details.pages = data.details.numPages
-			details.year = os.date("%Y", data.details.publicationTime / 1000)
+			if data.details then
+				details.pages = data.details.numPages
+				if data.details.publicationTime then
+					details.year = os.date("%Y", data.details.publicationTime / 1000)
+				end
+			end
 		elseif string.find(key, "Work:") then
 			details.rating = data.stats.averageRating
 			details.num_ratings = data.stats.ratingsCount

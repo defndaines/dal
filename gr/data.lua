@@ -140,7 +140,7 @@ function data.output(book)
 	end
 
 	order[#order + 1] = table.concat(tag.sort(book.tags), ", ")
-	order[#order + 1] = book.rating
+	order[#order + 1] = string.format("%.2f", book.rating)
 	order[#order + 1] = book.num_ratings or ""
 	order[#order + 1] = "[" .. (book.id or "") .. "](" .. book.url .. ")"
 
@@ -154,7 +154,7 @@ function data.output_log(book)
 	order[#order + 1] = book.author
 	order[#order + 1] = book.year
 	order[#order + 1] = book.country
-	order[#order + 1] = book.rating
+	order[#order + 1] = string.format("%.2f", book.rating)
 	order[#order + 1] = book.format
 	order[#order + 1] = book.pages
 	order[#order + 1] = table.concat(tag.sort(book.tags), ", ")
