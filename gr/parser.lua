@@ -5,6 +5,7 @@ local parser = {}
 ]]
 
 local htmlparser = require("htmlparser")
+local json = require("json")
 
 function parser.book_link(html, title, author)
 	-- Bug workaround: https://github.com/msva/lua-htmlparser/issues/67
@@ -293,71 +294,49 @@ local function uniq(list)
 end
 
 function parser.book_details(html)
-	local details = {}
+	local details = { tags = {}, genres = {} }
 
-	details.id = html:match('{\\"legacyId\\":\\"(%d+)\\"}')
-	html = html:gsub("<script.-</script>", "")
+	local results = html:match('<script id="__NEXT_DATA__" type="application/json">(.-)</script>')
+	local decoded = json.decode(results)
+	local state = decoded.props.pageProps.apolloState
 
-	local tree = htmlparser.parse(html, 10000)
+	for key, data in pairs(state) do
+		if string.find(key, "Contributor:") then
+			-- There can be non-author contributors, so how to filter only the relative one.
+			details.author = data.name
+			details.author_url = data.webUrl
+		elseif string.find(key, "User:") then
+			-- Skip User, prefer Contributor. These are the data for any GR user.
+		elseif string.find(key, "Series:") then
+			details.series =
+				data.title:gsub("'", "’"):gsub("%[.-%]", ""):gsub("%(.-%)", ""):gsub(":", ""):gsub("%s+$", "")
+		elseif string.find(key, "Book:") then
+			details.title = data.title
+			details.id = data.legacyId
+			details.url = data.webUrl
 
-	local title = tree:select("h1")
+			if data.bookSeries and data.bookSeries[1].userPosition ~= "" then
+				details.volume = data.bookSeries[1].userPosition
+			end
 
-	if #title > 0 then
-		details.title = title[1]:getcontent():gsub("&#x27;", "’"):gsub("amp;", "")
-	end
+			for _, entry in ipairs(data.bookGenres) do
+				details.genres[#details.genres + 1] = entry.genre.name:lower()
+			end
 
-	local authors = {}
-	local contributors = tree:select("div.ContributorLinksList a.ContributorLink")
-
-	for _, contributor in pairs(contributors) do
-		local role = contributor:select("span.ContributorLink__role")
-
-		if not details.author_link then
-			details.author_link = contributor.attributes["href"]
+			details.pages = data.details.numPages
+			details.year = os.date("%Y", data.details.publicationTime / 1000)
+		elseif string.find(key, "Work:") then
+			details.rating = data.stats.averageRating
+			details.num_ratings = data.stats.ratingsCount
+		elseif string.find(key, "Review:") then
+			-- Skip
+		elseif string.find(key, "Shelving:") then
+			-- Skip
+		elseif string.find(key, "Genre:") then
+			details.genres[#details.genres + 1] = data.name
+		elseif key ~= "ROOT_QUERY" then
+			print("unknown key", key)
 		end
-
-		if #role > 0 and #authors > 0 then
-			-- skip translators, editors, etc.
-		else
-			local span = contributor:select("span.ContributorLink__name")[1]
-			authors[#authors + 1] = span:getcontent():gsub("%s+", " "):gsub("&#x27;", "’")
-		end
-	end
-
-	details.author = table.concat(uniq(authors), ", ")
-
-	local ratings = tree:select("div.RatingStatistics__rating")
-
-	if #ratings > 0 then
-		details.rating = ratings[1]:getcontent()
-		-- print("rating: ", details.rating)
-	else
-		print("WARNING: rating not found!")
-	end
-
-	local num_ratings = tree:select("div.RatingStatistics__meta span")
-
-	if #num_ratings > 0 then
-		details.num_ratings = num_ratings[1]:getcontent():gsub("%D", "")
-		-- print("num_ratings: ", details.num_ratings)
-	else
-		print("WARNING: number of ratings not found!")
-	end
-
-	local pages = tree:select("div.FeaturedDetails p")
-
-	if #pages > 0 then
-		details.pages = pages[1]:getcontent():gsub("%D", "")
-		-- print("pages: ", details.pages)
-
-		if pages[2] then
-			details.year = pages[2]:getcontent():match("%d%d%d%d")
-			-- print("year: ", details.year)
-			details.published = pages[2]:getcontent():match("%w+ %d+, %d%d%d%d")
-			-- print("published: ", details.published)
-		end
-	else
-		print("WARNING: number of pages not found!")
 	end
 
 	local genres = {}
@@ -367,9 +346,7 @@ function parser.book_details(html)
 	local is_post_apocalyptic = false
 	local is_world_war = false
 
-	for _, genre in ipairs(tree:select("div.BookPageMetadataSection__genres a")) do
-		local g = genre.nodes[1]:getcontent():lower()
-
+	for _, g in ipairs(details.genres) do
 		if g == "memoir" then
 			is_memoir = true
 		elseif g == "post-apocalyptic" then
@@ -440,36 +417,13 @@ function parser.book_details(html)
 
 	details.tags = uniq(genres)
 
-	local series = tree:select("div.BookPageTitleSection__title h3 a")
-
-	if #series > 0 then
-		local series_info = series[1]
-			:getcontent()
-			:gsub("&#x27;", "’")
-			:gsub("'", "’")
-			:gsub("&amp;", "&")
-			:gsub("%[.-%]", "")
-			:gsub("%(.-%)", "")
-			:gsub(":", "")
-		local serie = series_info:gsub("%s*#.*", "")
-
-		if serie then
-			details.series = serie:gsub("%s+$", "")
-			local series_tag = serie:lower():gsub(",", ""):gsub("%s+$", ""):gsub("%s+", "-")
-
-			if series_info:match("#([^#]+)") then
-				local volume = series_info:gsub(".*#", "")
-				details.volume = volume
-				series_tag = series_tag .. "-" .. volume
-			end
-
-			details.tags[#details.tags + 1] = series_tag
-		else
-			print("WARNING: Problem parsing series information " .. series[1]:getcontent())
+	if details.series then
+		local series_tag = details.series:lower():gsub(",", ""):gsub("%s+$", ""):gsub("%s+", "-")
+		if details.volume and details.volume ~= "" then
+			series_tag = series_tag .. "-" .. details.volume
 		end
 
-		-- print("series: ", details.series)
-		-- print("volume: ", details.volume)
+		details.tags[#details.tags + 1] = series_tag
 	end
 
 	return details

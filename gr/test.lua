@@ -100,12 +100,11 @@ file:close()
 
 local details = parser.book_details(book_html)
 
-assert(details.id == "186074", "id was '" .. details.id .. "'")
-assert(details.rating == "4.52", "rating was '" .. details.rating .. "'")
-assert(details.num_ratings == "1049625", "num_ratings was '" .. details.num_ratings .. "'")
-assert(details.pages == "662", "pages was '" .. details.pages .. "'")
+assert(details.id == 186074, "id was '" .. details.id .. "'")
+assert(details.rating == 4.52, "rating was '" .. details.rating .. "'")
+assert(details.num_ratings == 1062761, "num_ratings was '" .. details.num_ratings .. "'")
+assert(details.pages == 662, "pages was '" .. details.pages .. "'")
 assert(details.year == "2007", "year was '" .. details.year .. "'")
-assert(details.published == "March 27, 2007", "published was '" .. details.published .. "'")
 assert(details.tags[1] == "fantasy", "fantasy genre missing")
 assert(details.series == "The Kingkiller Chronicle", "series was '" .. details.series .. "'")
 assert(details.volume == "1", "volume was '" .. details.volume .. "'")
@@ -164,7 +163,7 @@ assert(not details.volume, "volume was '" .. (details.volume or "nil") .. "'")
 -- Don't Double Print Series Information
 local series_re = "the%-stormlight%-archive%-1"
 local line = "| The Way of Kings | Brandon Sanderson | 2010 | U.S. | 1007 | 45:30 "
-	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 631018 "
+	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 625908 "
 	.. "| [7235533](https://www.goodreads.com/book/show/7235533-the-way-of-kings) |"
 local book = data.parse_audio_book(line)
 

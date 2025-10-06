@@ -1,3 +1,5 @@
+#!/usr/bin/env lua
+
 local overdrive = require("overdrive")
 
 -- single result, includes awards
