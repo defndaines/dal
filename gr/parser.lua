@@ -294,7 +294,7 @@ local function uniq(list)
 end
 
 function parser.book_details(html)
-	local details = { tags = {}, genres = {} }
+	local details = { tags = {}, genres = {}, contributors = {} }
 
 	local results = html:match('<script id="__NEXT_DATA__" type="application/json">(.-)</script>')
 	local decoded = json.decode(results)
@@ -302,9 +302,8 @@ function parser.book_details(html)
 
 	for key, data in pairs(state) do
 		if string.find(key, "Contributor:") then
-			-- There can be non-author contributors, so how to filter only the relative one.
-			details.author = data.name
-			details.author_url = data.webUrl
+			-- print(key, data.name)
+			details.contributors[key] = { name = data.name, url = data.webUrl }
 		elseif string.find(key, "User:") then
 			-- Skip User, prefer Contributor. These are the data for any GR user.
 		elseif string.find(key, "Series:") then
@@ -314,6 +313,34 @@ function parser.book_details(html)
 			details.title = data.title
 			details.id = data.legacyId
 			details.url = data.webUrl
+
+			if data.primaryContributorEdge then
+				local author = details.contributors[data.primaryContributorEdge.node.__ref]
+				if author then
+					details.author = author.name
+					details.author_link = author.url
+				else
+					print("Author not found for", data.primaryContributorEdge.node.__ref)
+					for k, v in pairs(details.contributors) do
+						print(k, v.name)
+					end
+				end
+			end
+
+			if data.secondaryContributorEdges then
+				for _, secondary in ipairs(data.secondaryContributorEdges) do
+					local author = details.contributors[secondary.node.__ref]
+					if author and secondary.role == "Author" then
+						details.author = (details.author or "") .. ", " .. author.name
+					else
+						-- if secondary.role then
+						--     local role = secondary.role:lower()
+						--     details.author = details.author .. " (" .. role .. ")"
+						-- end
+						print("skipping", secondary.node.__ref, secondary.role)
+					end
+				end
+			end
 
 			if data.bookSeries and next(data.bookSeries) ~= nil and data.bookSeries[1].userPosition ~= "" then
 				details.volume = data.bookSeries[1].userPosition

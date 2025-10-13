@@ -103,6 +103,10 @@ function scraper.get_book_info(title, author)
 		html, err = spider.fetch_url(book.author_link)
 
 		if html then
+			-- local file = io.open("spec/" .. (author:gsub("%s", "-")) .. ".html", "w")
+			-- file:write(html)
+			-- file:close()
+
 			book.country = parser.author_details(html)
 		else
 			print("WARNING:", err)
