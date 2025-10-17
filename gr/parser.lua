@@ -294,7 +294,7 @@ local function uniq(list)
 end
 
 function parser.book_details(html)
-	local details = { tags = {}, genres = {}, contributors = {} }
+	local details = { tags = {}, genres = {}, contributors = {}, secondaries = {} }
 
 	local results = html:match('<script id="__NEXT_DATA__" type="application/json">(.-)</script>')
 	local decoded = json.decode(results)
@@ -302,10 +302,9 @@ function parser.book_details(html)
 
 	for key, data in pairs(state) do
 		if string.find(key, "Contributor:") then
-			-- print(key, data.name)
 			details.contributors[key] = { name = data.name, url = data.webUrl }
 		elseif string.find(key, "User:") then
-			-- Skip User, prefer Contributor. These are the data for any GR user.
+			-- Skip User, prefer Contributor. These are the data for any official GR user.
 		elseif string.find(key, "Series:") then
 			details.series =
 				data.title:gsub("'", "’"):gsub("%[.-%]", ""):gsub("%(.-%)", ""):gsub(":", ""):gsub("%s+$", "")
@@ -315,30 +314,18 @@ function parser.book_details(html)
 			details.url = data.webUrl
 
 			if data.primaryContributorEdge then
-				local author = details.contributors[data.primaryContributorEdge.node.__ref]
-				if author then
-					details.author = author.name
-					details.author_link = author.url
-				else
-					print("Author not found for", data.primaryContributorEdge.node.__ref)
-					for k, v in pairs(details.contributors) do
-						print(k, v.name)
-					end
-				end
+				details.primary = {
+					ref = data.primaryContributorEdge.node.__ref,
+					role = data.primaryContributorEdge.role:lower(),
+				}
 			end
 
 			if data.secondaryContributorEdges then
 				for _, secondary in ipairs(data.secondaryContributorEdges) do
-					local author = details.contributors[secondary.node.__ref]
-					if author and secondary.role == "Author" then
-						details.author = (details.author or "") .. ", " .. author.name
-					else
-						-- if secondary.role then
-						--     local role = secondary.role:lower()
-						--     details.author = details.author .. " (" .. role .. ")"
-						-- end
-						print("skipping", secondary.node.__ref, secondary.role)
-					end
+					details.secondaries[#details.secondaries + 1] = {
+						ref = secondary.node.__ref,
+						role = secondary.role:lower(),
+					}
 				end
 			end
 
@@ -357,6 +344,9 @@ function parser.book_details(html)
 				if data.details.publicationTime then
 					details.year = os.date("%Y", data.details.publicationTime / 1000)
 				end
+				if data.details.format then
+					details.format = data.details.format:lower()
+				end
 			end
 		elseif string.find(key, "Work:") then
 			details.rating = data.stats.averageRating
@@ -369,6 +359,27 @@ function parser.book_details(html)
 			details.genres[#details.genres + 1] = data.name
 		elseif key ~= "ROOT_QUERY" then
 			print("unknown key", key)
+		end
+	end
+
+	local author = details.contributors[details.primary.ref]
+	if author then
+		details.author = author.name
+		details.author_link = author.url
+	else
+		print("WARNING: Author not found.", details.primary.ref, details.primary.role)
+	end
+
+	for _, secondary in ipairs(details.secondaries) do
+		local contrib = details.contributors[secondary.ref]
+		if contrib then
+			if secondary.role == "author" or secondary.role == "contributor" then
+				details.author = (details.author or "") .. ", " .. contrib.name
+			elseif secondary.role == "editor" then
+				details.author = (details.author or "") .. ", " .. contrib.name .. " (editor)"
+			elseif secondary.role:find("translat") then
+				details.author = (details.author or "") .. ", " .. contrib.name .. " (translator)"
+			end
 		end
 	end
 
