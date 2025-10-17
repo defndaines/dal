@@ -294,7 +294,7 @@ local function uniq(list)
 end
 
 function parser.book_details(html)
-	local details = { tags = {}, genres = {}, contributors = {}, secondaries = {} }
+	local details = { tags = {}, genres = {}, contributors = {}, secondaries = {}, awards = {} }
 
 	local results = html:match('<script id="__NEXT_DATA__" type="application/json">(.-)</script>')
 	local decoded = json.decode(results)
@@ -341,7 +341,7 @@ function parser.book_details(html)
 
 			if data.details then
 				details.pages = data.details.numPages
-				if data.details.publicationTime then
+				if data.details.publicationTime and details.year == nil then
 					details.year = os.date("%Y", data.details.publicationTime / 1000)
 				end
 				if data.details.format then
@@ -351,6 +351,20 @@ function parser.book_details(html)
 		elseif string.find(key, "Work:") then
 			details.rating = data.stats.averageRating
 			details.num_ratings = data.stats.ratingsCount
+
+			if data.details.publicationTime then
+				-- Original publication date.
+				details.year = os.date("%Y", data.details.publicationTime / 1000)
+			end
+
+			if data.details.awardsWon then
+				for _, award in ipairs(data.details.awardsWon) do
+					if award.designation == "WINNER" then
+						-- Maybe only store if the first characters is [A-Z]?
+						details.awards[#details.awards + 1] = award.name
+					end
+				end
+			end
 		elseif string.find(key, "Review:") then
 			-- Skip
 		elseif string.find(key, "Shelving:") then
@@ -468,6 +482,10 @@ function parser.book_details(html)
 		end
 
 		details.tags[#details.tags + 1] = series_tag
+	end
+
+	for _, award in pairs(details.awards) do
+		details.tags[#details.tags + 1] = award
 	end
 
 	return details
