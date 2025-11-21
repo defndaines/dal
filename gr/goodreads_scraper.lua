@@ -38,11 +38,13 @@ for i, book in ipairs(books) do
 
 			if audiobook then
 				book.hours = audiobook.duration
+				print(string.format("%3d", i) .. " " .. book.title .. ", new audiobook: " .. book.hours)
 			else
 				audiobook = audible.search(info.title, info.author)
 
 				if audiobook and audiobook.hours then
 					book.hours = audiobook.hours
+					print(string.format("%3d", i) .. " " .. book.title .. ", new Audible: " .. book.hours)
 					book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
 				end
 			end
