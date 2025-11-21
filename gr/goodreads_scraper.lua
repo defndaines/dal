@@ -42,7 +42,8 @@ for i, book in ipairs(books) do
 			else
 				audiobook = audible.search(info.title, info.author)
 
-				if audiobook and audiobook.hours then
+				-- Audible will put up the page for upcoming books without the time.
+				if audiobook and audiobook.hours ~= "00:00" then
 					book.hours = audiobook.hours
 					print(string.format("%3d", i) .. " " .. book.title .. ", new Audible: " .. book.hours)
 					book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
