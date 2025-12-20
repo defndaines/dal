@@ -2,6 +2,9 @@ local tag = {}
 
 function tag.parse(list)
 	local tags = {}
+	if list == nil then
+		list = ""
+	end
 
 	for t in list:gmatch("[^,]+") do
 		tags[#tags + 1] = t:gsub("^%s+", ""):gsub("%s+$", "")
