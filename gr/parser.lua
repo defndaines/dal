@@ -16,7 +16,11 @@ function parser.book_link(html, title, author)
 
 	local link
 	local highest = 0
-	local last_name = author:match("%S+$")
+	local last_name
+
+	if author then
+		last_name = author:match("%S+$")
+	end
 
 	for _, book in ipairs(books) do
 		local book_title = book:select("a.bookTitle")[1]
@@ -41,7 +45,7 @@ function parser.book_link(html, title, author)
 				goto continue
 			elseif name:lower() == author:lower() then
 				is_author_found = true
-			elseif name:find(last_name) then
+			elseif last_name and name:find(last_name) then
 				is_author_found = true
 			end
 		end

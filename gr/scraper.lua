@@ -54,9 +54,15 @@ end
 
 function scraper.get_book_info(title, author)
 	local s_title = title:gsub("%p", " ")
-	-- local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%p", " "):gsub("%s%s+", " ")
-	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%s%s+", " ")
-	local query = spider.urlencode(s_title .. " " .. s_author)
+	local query
+
+	if author then
+		local s_author = author:gsub("%s*%([^)]*%)", ""):gsub("%s%s+", " ")
+		query = spider.urlencode(s_title .. " " .. s_author)
+	else
+		query = spider.urlencode(s_title)
+	end
+
 	local search_url = "https://www.goodreads.com/search?q=" .. query
 
 	local html, err
