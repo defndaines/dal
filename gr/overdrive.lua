@@ -158,7 +158,7 @@ function overdrive.parse_results(html, title, author)
 					awards[#awards + 1] = "Booker Prize"
 				elseif awards.description == "Andre Norton Nebula Award for Middle Grade and Young Adult Fiction" then
 					awards[#awards + 1] = "Nebula Award"
-				elseif not ignored_awards[award.description] and award.source ~= "The New York Times" then
+				elseif not ignored_awards[award.description] and award.source ~= "The New York Times" and award.description ~= "Finalist" then
 					awards[#awards + 1] = award.description
 				end
 			end

@@ -2,7 +2,7 @@ local tag = {}
 
 function tag.parse(list)
 	local tags = {}
-	if list == nil then
+	if list == nil or list:match("^%s*$") then
 		list = ""
 	end
 

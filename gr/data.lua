@@ -4,7 +4,7 @@ local tag = require("tag")
 
 function data.parse_audio_book(line)
 	local title, author, year, country, pages, hours, list, rating, num_ratings, id, url =
-		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | %[(.+)%]%((.+)%) |")
+		line:match("| (.+) | (.+) | (.-) | (.-) | (.-) | (.-) | (.-) | (.-) | (.-) | %[(.+)%]%((.+)%) |")
 
 	return {
 		title = title,
@@ -23,7 +23,7 @@ end
 
 local function parse_book(line)
 	local title, author, year, country, pages, list, rating, num_ratings, id, url =
-		line:match("| (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | (.+) | %[(.+)%]%((.+)%) |")
+		line:match("| (.+) | (.+) | (.-) | (.-) | (.-) | (.-) | (.-) | (.-) | %[(.+)%]%((.+)%) |")
 
 	return {
 		title = title,
@@ -87,7 +87,6 @@ function data.parse_log(file)
 	local books = {}
 
 	while line do
-		print(line)
 		local title, author, year, country, rating, format, pages, list =
 			line:match("| (.+) | (.+) | (%d%d%d%d) | (.+) | (%d%.%d) | (.+) | (%d+) | (.+) |")
 
@@ -110,15 +109,28 @@ function data.parse_log(file)
 	return books
 end
 
+local function non_empty(str)
+	if str then
+		local trimmed = str:match("^%s*(.-)%s*$")
+		if trimmed == "" then
+			return nil
+		else
+			return trimmed
+		end
+	else
+		return nil
+	end
+end
+
 function data.merge(book, info)
 	return {
 		title = book.title or info.title,
 		author = book.author or info.author,
-		year = book.year or info.year,
-		country = book.country or info.country,
-		pages = book.pages or info.pages,
-		hours = book.hours or info.hours,
-		tags = book.tags,
+		year = non_empty(book.year) or info.year,
+		country = non_empty(book.country) or info.country,
+		pages = non_empty(book.pages) or info.pages,
+		hours = non_empty(book.hours) or info.hours,
+		tags = next(book.tags) and book.tags or info.tags,
 		rating = info.rating or book.rating,
 		num_ratings = info.num_ratings,
 		id = book.id or info.id,
