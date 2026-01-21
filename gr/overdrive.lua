@@ -153,12 +153,12 @@ function overdrive.parse_results(html, title, author)
 
 			for _, award in ipairs(book.awards) do
 				if award.description == "Nobel Prize in Literature Awarded Author" then
-					awards[#awards + 1] = "Nobel"
+					awards[#awards + 1] = "Nobel Prize"
 				elseif award.description == "Man Booker Prize for Fiction" then
 					awards[#awards + 1] = "Booker Prize"
 				elseif awards.description == "Andre Norton Nebula Award for Middle Grade and Young Adult Fiction" then
 					awards[#awards + 1] = "Nebula Award"
-				elseif not ignored_awards[award.description] and award.source ~= "The New York Times" and award.description ~= "Finalist" then
+				elseif not ignored_awards[award.description] and award.source ~= "The New York Times" then
 					awards[#awards + 1] = award.description
 				end
 			end

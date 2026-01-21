@@ -363,7 +363,7 @@ function parser.book_details(html)
 
 			if data.details.awardsWon then
 				for _, award in ipairs(data.details.awardsWon) do
-					if award.designation == "WINNER" then
+					if award.designation == "WINNER" and award.name:find("Finalist") == nil then
 						-- Maybe only store if the first characters is [A-Z]?
 						details.awards[#details.awards + 1] = award.name
 					end
