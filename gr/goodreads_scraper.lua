@@ -4,9 +4,8 @@ local overdrive = require("overdrive")
 local audible = require("audible")
 local socket = require("socket")
 
-local path = "../../kiroku/data/audiobooks.md"
--- local path = "../../kiroku/data/ebooks.md"
--- local path = "../../kiroku/data/printbooks.md"
+-- local path = "../../kiroku/data/audiobooks.md"
+local path = "../../kiroku/data/eyebooks.md"
 
 local books = data.parse(path)
 local outfile = "/tmp/" .. path:gsub(".*/", "")
