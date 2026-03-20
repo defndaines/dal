@@ -1,3 +1,5 @@
+-- luarocks install luasocket
+
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
