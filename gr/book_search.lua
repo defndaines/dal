@@ -1,5 +1,15 @@
 #!/usr/bin/env lua
 
+local script_path = debug.getinfo(1, "S").source:match("^@(.+)$") or "."
+local handle = io.popen("realpath '" .. script_path .. "'")
+if handle then
+	local real = handle:read("*l")
+	handle:close()
+	if real then script_path = real end
+end
+local script_dir = script_path:match("^(.+)/[^/]+$") or "."
+package.path = script_dir .. "/?.lua;" .. package.path
+
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
