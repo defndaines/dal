@@ -9,7 +9,7 @@ end
 
 M.new = new -- add 'new' to the module
 
--- contant 'i'
+-- constant 'i'
 M.i = new(0, 1)
 
 function M.add(c1, c2)
