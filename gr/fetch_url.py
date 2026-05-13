@@ -59,11 +59,15 @@ def refresh_cookies():
     return cookie_str
 
 def fetch(url, cookie_str=""):
-    from curl_cffi import requests
+    from curl_cffi import requests, CurlError
     headers = dict(HEADERS)
     if cookie_str:
         headers["Cookie"] = cookie_str
-    return requests.get(url, headers=headers, impersonate="chrome120")
+    try:
+        r = requests.get(url, headers=headers, impersonate="chrome120", timeout=15)
+        return r, r.status_code
+    except CurlError:
+        return None, None
 
 if len(sys.argv) < 2:
     sys.stderr.write("Usage: fetch_url.py <url>\n")
@@ -71,12 +75,15 @@ if len(sys.argv) < 2:
 
 url = sys.argv[1]
 cookie_str = load_cookies()
-r = fetch(url, cookie_str)
+r, status = fetch(url, cookie_str)
 
-if r.status_code == 202:
+if status != 200:
     sys.stderr.write("[fetch_url] WAF challenge — refreshing cookies via headless browser\n")
     cookie_str = refresh_cookies()
-    r = fetch(url, cookie_str)
+    r, status = fetch(url, cookie_str)
 
-sys.stdout.buffer.write(r.content)
-sys.stdout.buffer.write(f"\n{r.status_code}\n".encode())
+if status == 200:
+    sys.stdout.buffer.write(r.content)
+    sys.stdout.buffer.write(b"\n200\n")
+else:
+    sys.stdout.buffer.write(f"\n{status}\n".encode())
