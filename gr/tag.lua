@@ -80,6 +80,7 @@ function tag.sort(tags)
 	end
 
 	for _, t in ipairs(tags) do
+		if t:lower():find(" finalist$") then goto continue end
 		if positions[t] then
 			local position = positions[t]
 			sorted[position][#sorted[position] + 1] = t
@@ -110,6 +111,7 @@ function tag.sort(tags)
 		else
 			sorted[7][#sorted[7] + 1] = t
 		end
+		::continue::
 	end
 
 	local out = {}
