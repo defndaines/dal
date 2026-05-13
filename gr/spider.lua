@@ -1,15 +1,7 @@
 local spider = {}
 
---[[
-  Install libraries:
-    luarocks install luasocket
-    luarocks install luasec
-    luarocks install lua-zlib
-]]
-
-local https = require("ssl.https")
-local ltn12 = require("ltn12")
-local zlib = require("zlib")
+local script_dir = debug.getinfo(1, "S").source:match("^@(.+)/[^/]+$") or "."
+local fetch_script = script_dir .. "/fetch_url.py"
 
 function spider.urlencode(str)
 	return str:gsub("([^%w _%%%-%.~])", function(c)
@@ -17,65 +9,36 @@ function spider.urlencode(str)
 	end):gsub(" ", "+")
 end
 
-local function read_cookie()
-	local f = io.open(os.getenv("HOME") .. "/.goodreads_cookie", "r")
-	if f then
-		local val = f:read("*l")
-		f:close()
-		return val
-	end
+local function shell_escape(str)
+	return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
 function spider.fetch_url(url)
-	local response = {}
+	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(url)
 
-	local headers = {
-		["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
-			.. " AppleWebKit/537.36 (KHTML, like Gecko)"
-			.. " Chrome/138.0.0.0 Safari/537.36",
-		["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-		["Accept-Language"] = "en-US,en;q=0.9",
-		["Accept-Encoding"] = "gzip",
-		["Sec-Fetch-Dest"] = "document",
-		["Sec-Fetch-Mode"] = "navigate",
-		["Sec-Fetch-Site"] = "none",
-		["Sec-Fetch-User"] = "?1",
-		["Upgrade-Insecure-Requests"] = "1",
-	}
+	local handle = io.popen(cmd)
+	if not handle then
+		return nil, "fetch_url.py failed to start"
+	end
+	local result = handle:read("*a")
+	handle:close()
 
-	local cookie = read_cookie()
-	if cookie then
-		headers["Cookie"] = cookie
+	local body, status_str = result:match("^(.*)\n(%d+)%s*$")
+	local status = tonumber(status_str)
+
+	if not status then
+		return nil, "fetch error"
 	end
 
-	local result, status_code, response_headers = https.request({
-		url = url,
-		method = "GET",
-		headers = headers,
-		sink = ltn12.sink.table(response),
-	})
-
-	if result and status_code == 200 then
-		local body = table.concat(response)
-		local content_encoding = response_headers["content-encoding"] or response_headers["Content-Encoding"]
-
-		if content_encoding and content_encoding:find("gzip") then
-			local inflate_stream = zlib.inflate(15 + 16)
-			local decompressed, eof, bytes_in, bytes_out = inflate_stream(body)
-
-			if not decompressed then
-				error("Failed to decompress gzip data: " .. tostring(eof))
-			end
-
-			body = decompressed
-		end
-
+	if status == 200 then
 		return body
-	elseif status_code == 202 then
-		return nil, "Goodreads WAF challenge (run refresh_cookie.sh to update ~/.goodreads_cookie)"
-	else
-		return nil, status_code
 	end
+
+	if status == 202 then
+		io.stderr:write("[spider] Goodreads WAF challenge (202) — run refresh_cookie.sh\n")
+	end
+
+	return nil, status
 end
 
 return spider

@@ -374,7 +374,7 @@ function parser.book_details(html)
 		elseif string.find(key, "Shelving:") then
 			-- Skip
 		elseif string.find(key, "Genre:") then
-			details.genres[#details.genres + 1] = data.name
+			-- Skip: bookGenres in Book: is authoritative; Genre: entries now include genres from unrelated page sections.
 		elseif key ~= "ROOT_QUERY" then
 			print("unknown key", key)
 		end
