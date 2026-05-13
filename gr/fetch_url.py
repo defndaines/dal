@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["curl_cffi", "playwright"]
 # ///
-import sys, os, subprocess
+import sys, subprocess
 from pathlib import Path
 
 COOKIE_PATH = Path.home() / ".goodreads_cookie"
@@ -82,7 +82,7 @@ if status != 200:
     cookie_str = refresh_cookies()
     r, status = fetch(url, cookie_str)
 
-if status == 200:
+if r is not None and status == 200:
     sys.stdout.buffer.write(r.content)
     sys.stdout.buffer.write(b"\n200\n")
 else:

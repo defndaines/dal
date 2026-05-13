@@ -11,7 +11,7 @@ function parser.book_link(html, title, author)
 	-- Bug workaround: https://github.com/msva/lua-htmlparser/issues/67
 	html = html:gsub("<script.-</script>", "")
 
-	local tree = htmlparser.parse(html, 10000)
+	local tree = htmlparser.parse(html, 50000)
 	local books = tree:select("table tr")
 
 	local link
