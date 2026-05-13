@@ -313,43 +313,45 @@ function parser.book_details(html)
 			details.series =
 				data.title:gsub("'", "’"):gsub("%[.-%]", ""):gsub("%(.-%)", ""):gsub(":", ""):gsub("%s+$", "")
 		elseif string.find(key, "Book:") then
-			details.title = data.title
-			details.id = data.legacyId
-			details.url = data.webUrl
+			if not data.primaryContributorEdge then
+				-- Skip stub Book: entries (carousel references etc.); only the main entry has this.
+			else
+				details.title = data.title
+				details.id = data.legacyId
+				details.url = data.webUrl
 
-			if data.primaryContributorEdge then
 				details.primary = {
 					ref = data.primaryContributorEdge.node.__ref,
 					role = data.primaryContributorEdge.role:lower(),
 				}
-			end
 
-			if data.secondaryContributorEdges then
-				for _, secondary in ipairs(data.secondaryContributorEdges) do
-					details.secondaries[#details.secondaries + 1] = {
-						ref = secondary.node.__ref,
-						role = secondary.role:lower(),
-					}
+				if data.secondaryContributorEdges then
+					for _, secondary in ipairs(data.secondaryContributorEdges) do
+						details.secondaries[#details.secondaries + 1] = {
+							ref = secondary.node.__ref,
+							role = secondary.role:lower(),
+						}
+					end
 				end
-			end
 
-			if data.bookSeries and next(data.bookSeries) ~= nil and data.bookSeries[1].userPosition ~= "" then
-				details.volume = data.bookSeries[1].userPosition
-			end
-
-			if data.bookGenres then
-				for _, entry in ipairs(data.bookGenres) do
-					details.genres[#details.genres + 1] = entry.genre.name:lower()
+				if data.bookSeries and next(data.bookSeries) ~= nil and data.bookSeries[1].userPosition ~= "" then
+					details.volume = data.bookSeries[1].userPosition
 				end
-			end
 
-			if data.details then
-				details.pages = data.details.numPages
-				if data.details.publicationTime and details.year == nil then
-					details.year = os.date("%Y", data.details.publicationTime / 1000)
+				if data.bookGenres then
+					for _, entry in ipairs(data.bookGenres) do
+						details.genres[#details.genres + 1] = entry.genre.name:lower()
+					end
 				end
-				if data.details.format then
-					details.format = data.details.format:lower()
+
+				if data.details then
+					details.pages = data.details.numPages
+					if data.details.publicationTime and details.year == nil then
+						details.year = os.date("%Y", data.details.publicationTime / 1000)
+					end
+					if data.details.format then
+						details.format = data.details.format:lower()
+					end
 				end
 			end
 		elseif string.find(key, "Work:") then

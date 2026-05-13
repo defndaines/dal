@@ -170,6 +170,7 @@ function overdrive.parse_results(html, title, author)
 end
 
 function overdrive.search(title, author, overdrive_url)
+	if not title or not author then return nil end
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
 	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
 	local query = spider.urlencode(s_title .. " " .. s_author)
