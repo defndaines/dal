@@ -128,6 +128,7 @@ local ignored_awards = {
 
 function overdrive.parse_results(html, title, author)
 	local results = html:match("window%.OverDrive%.mediaItems = ({.-});%s*window%.OverDrive%.")
+	if not results then return nil end
 	local decoded = json.decode(results)
 	local book = select_book(decoded, title, author)
 
