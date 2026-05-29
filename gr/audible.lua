@@ -21,10 +21,13 @@ local function find_duration(html)
 	end
 end
 
-function audible.find_link(html, title, author)
+function audible.find_link(html, title, author, url)
 	local last_name = author:match("%S+$")
 	html = html:gsub("<script.-</script>", "")
-	local tree = htmlparser.parse(html, 10000)
+	if url then
+		io.stderr:write("[audible] Parsing: " .. url .. "\n")
+	end
+	local tree = htmlparser.parse(html, 50000)
 	local results = tree:select('div[data-widget="productList"] li.productListItem')
 
 	for _, result in pairs(results) do
@@ -89,7 +92,7 @@ function audible.search(title, author)
 		-- file:write(html)
 		-- file:close()
 
-		return audible.find_link(html, title, author)
+		return audible.find_link(html, title, author, search_url)
 	else
 		return nil, "Search fetch error: " .. err
 	end
