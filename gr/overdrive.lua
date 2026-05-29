@@ -41,7 +41,8 @@ end
 local function select_book(results, title, author)
 	local max_score = 0
 	local winner
-	local last_name = author:match("%S+$")
+	local primary_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):gsub("%s+$", "")
+	local last_name = primary_author:match("%S+$")
 
 	for _, book in pairs(results) do
 		if book.edition ~= "Unabridged" then
@@ -71,7 +72,7 @@ local function select_book(results, title, author)
 		local is_author_found = false
 		for _, creator in ipairs(book.creators) do
 			if creator.role == "Author" then
-				if creator.name == author or creator.name:find(last_name) then
+				if creator.name == primary_author or creator.name:find(last_name) then
 					score = score + 2
 					is_author_found = true
 				else
