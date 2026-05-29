@@ -24,9 +24,9 @@ end
 function audible.find_link(html, title, author, url)
 	local last_name = author:match("%S+$")
 	html = html:gsub("<script.-</script>", "")
-	if url then
-		io.stderr:write("[audible] Parsing: " .. url .. "\n")
-	end
+	-- if url then
+	--     io.stderr:write("[audible] Parsing: " .. url .. "\n")
+	-- end
 	local tree = htmlparser.parse(html, 50000)
 	local results = tree:select('div[data-widget="productList"] li.productListItem')
 
