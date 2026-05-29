@@ -46,7 +46,7 @@ function parser.book_link(html, title, author)
 
 			if name == "Unknown Author" then
 				goto continue
-			elseif name:lower() == author:lower() then
+			elseif author and name:lower() == author:lower() then
 				is_author_found = true
 			elseif last_name and name:find(last_name) then
 				is_author_found = true

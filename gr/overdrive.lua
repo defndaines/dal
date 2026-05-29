@@ -23,18 +23,7 @@ local json = require("json")
 
 local function format_duration(duration)
 	local h, m, s = duration:match("(%d%d):(%d%d):(%d%d)")
-
-	if tonumber(s) >= 30 then
-		m = tonumber(m) + 1
-		if m == 60 then
-			h = string.format("%02d", tonumber(h) + 1)
-			m = "00"
-		else
-			m = string.format("%02d", m)
-		end
-	end
-
-	return h .. ":" .. m
+	return spider.format_seconds(tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s))
 end
 
 -- Given a set of results, return the best one.
@@ -173,8 +162,8 @@ end
 
 function overdrive.search(title, author, overdrive_url)
 	if not title or not author then return nil end
-	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
+	local s_title = spider.search_title(title)
+	local s_author = spider.search_author(author)
 	local query = spider.urlencode(s_title .. " " .. s_author)
 	overdrive_url = overdrive_url or overdrive.lapl_url
 	local search_url = overdrive_url .. "/search?query=" .. query .. "&format=audiobook-overdrive&language=en"

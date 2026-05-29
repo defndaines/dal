@@ -3,6 +3,30 @@ local spider = {}
 local script_dir = debug.getinfo(1, "S").source:match("^@(.+)/[^/]+$") or "."
 local fetch_script = script_dir .. "/fetch_url.py"
 
+function spider.format_seconds(seconds)
+	local h = math.floor(seconds / 3600)
+	local m = math.floor((seconds % 3600) / 60)
+	local s = seconds % 60
+
+	if s >= 30 then
+		m = m + 1
+		if m == 60 then
+			h = h + 1
+			m = 0
+		end
+	end
+
+	return string.format("%02d:%02d", h, m)
+end
+
+function spider.search_title(title)
+	return title:gsub("'s", ""):gsub(":.*", ""):gsub("%p", " ")
+end
+
+function spider.search_author(author)
+	return (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
+end
+
 function spider.urlencode(str)
 	return str:gsub("([^%w _%%%-%.~])", function(c)
 		return string.format("%%%02X", string.byte(c))

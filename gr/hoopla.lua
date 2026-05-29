@@ -1,6 +1,7 @@
 local hoopla = {}
 
 local json = require("json")
+local spider = require("spider")
 
 local script_dir = debug.getinfo(1, "S").source:match("^@(.+)/[^/]+$") or "."
 local fetch_script = script_dir .. "/fetch_hoopla.py"
@@ -9,21 +10,6 @@ local function shell_escape(str)
 	return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
-local function format_seconds(seconds)
-	local h = math.floor(seconds / 3600)
-	local m = math.floor((seconds % 3600) / 60)
-	local s = seconds % 60
-
-	if s >= 30 then
-		m = m + 1
-		if m == 60 then
-			h = h + 1
-			m = 0
-		end
-	end
-
-	return string.format("%02d:%02d", h, m)
-end
 
 function hoopla.find_audiobook(data, title, author)
 	local hits = data.data and data.data.search and data.data.search.hits
@@ -54,7 +40,7 @@ function hoopla.find_audiobook(data, title, author)
 				return {
 					title = hit.title,
 					author = artist_name,
-					hours = format_seconds(hit.seconds or 0),
+					hours = spider.format_seconds(hit.seconds or 0),
 					hoopla = "https://www.hoopladigital.com/title/" .. hit.titleId,
 				}
 			end
@@ -69,8 +55,8 @@ function hoopla.search(title, author)
 		return nil
 	end
 
-	local s_title = title:gsub("'s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
+	local s_title = spider.search_title(title)
+	local s_author = spider.search_author(author)
 	local query = s_title .. " " .. s_author
 
 	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(query)

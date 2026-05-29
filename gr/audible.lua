@@ -12,13 +12,7 @@ local function find_duration(html)
 	local h = html:match("(%d+) hrs?") or "0"
 	local m = html:match("(%d+) mins?") or "0"
 
-	if h and m then
-		h = tonumber(h)
-		m = tonumber(m)
-		return string.format("%02d:%02d", h, m)
-	else
-		return nil
-	end
+	return string.format("%02d:%02d", tonumber(h), tonumber(m))
 end
 
 function audible.find_link(html, title, author, url)
@@ -72,8 +66,8 @@ function audible.find_link(html, title, author, url)
 end
 
 function audible.search(title, author)
-	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
+	local s_title = spider.search_title(title)
+	local s_author = spider.search_author(author)
 	local query = spider.urlencode(s_title .. " " .. s_author)
 
 	-- feature six is English
