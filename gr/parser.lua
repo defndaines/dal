@@ -24,10 +24,13 @@ function parser.book_link(html, title, author)
 
 	for _, book in ipairs(books) do
 		local book_title = book:select("a.bookTitle")[1]
+		if not book_title then goto continue end
 
-		local _title = book_title:select("span")[1]:getcontent():lower()
+		local _title = book_title:select("span")[1]:getcontent()
+			:gsub("&#39;", "'"):gsub("&amp;", "&"):gsub("&quot;", '"'):gsub("&apos;", "'")
+			:lower()
 
-		if not _title:find(title:lower()) then
+		if not _title:find(title:lower(), 1, true) then
 			goto continue
 		elseif _title:find("Summary") then
 			goto continue

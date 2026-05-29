@@ -51,7 +51,7 @@ local function select_book(results, title, author)
 
 		local score = 0
 
-		local _title = book.title:lower():gsub("'", "’")
+		local _title = book.title:lower():gsub("\xe2\x80\x99", "’")
 		if _title == title:lower() then
 			score = score + 4
 		elseif _title:sub(1, #title) == title:lower() then
