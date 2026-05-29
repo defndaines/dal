@@ -55,10 +55,10 @@ function parser.book_link(html, title, author)
 		end
 
 		local rating = book:select("div span span")[1]:getcontent()
-		local count = rating:match("([%d,]+) ratings?"):gsub(",", "")
+		local count = tonumber((rating:match("([%d,]+) ratings?"):gsub(",", "")))
 
-		if tonumber(count) > highest then
-			highest = tonumber(count)
+		if count > highest then
+			highest = count
 			link = "https://www.goodreads.com" .. book_title.attributes["href"]:gsub("?.*", "")
 		end
 

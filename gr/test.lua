@@ -92,6 +92,21 @@ book_link = parser.book_link(search_html, title, author)
 
 assert("https://www.goodreads.com/book/show/184428.Stalin" == book_link, "Incorrect book link: " .. book_link)
 
+-- Omit author from search to get canonical book, not edition pages
+
+file = io.open("spec/Bring-Up-the-Bodies-search.html", "r")
+search_html = file:read("*a")
+file:close()
+
+title = "Bring Up the Bodies"
+author = "Hilary Mantel"
+book_link = parser.book_link(search_html, title, author)
+
+assert(
+	"https://www.goodreads.com/book/show/13507212-bring-up-the-bodies" == book_link,
+	"Incorrect book link: " .. book_link
+)
+
 -- Test Extracting Book Details
 
 file = io.open("spec/book.html", "r")
