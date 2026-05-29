@@ -174,7 +174,7 @@ end
 function overdrive.search(title, author, overdrive_url)
 	if not title or not author then return nil end
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
+	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.", "")
 	local query = spider.urlencode(s_title .. " " .. s_author)
 	overdrive_url = overdrive_url or overdrive.lapl_url
 	local search_url = overdrive_url .. "/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
