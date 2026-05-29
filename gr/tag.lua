@@ -114,10 +114,14 @@ function tag.sort(tags)
 		::continue::
 	end
 
+	local seen = {}
 	local out = {}
 	for _, ts in ipairs(sorted) do
 		for _, v in pairs(ts) do
-			table.insert(out, v)
+			if not seen[v] then
+				seen[v] = true
+				table.insert(out, v)
+			end
 		end
 	end
 
