@@ -30,7 +30,7 @@ function parser.book_link(html, title, author)
 			:gsub("&#39;", "'"):gsub("&amp;", "&"):gsub("&quot;", '"'):gsub("&apos;", "'")
 			:lower()
 
-		if not _title:find(title:lower(), 1, true) then
+		if _title:sub(1, #title) ~= title:lower() then
 			goto continue
 		elseif _title:find("Summary") then
 			goto continue

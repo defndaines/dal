@@ -54,8 +54,7 @@ end
 
 function scraper.get_book_info(title, author)
 	title = title:gsub("\xe2\x80\x99", "'"):gsub("\xe2\x80\x98", "'")
-	local s_title = title:gsub("%p", " ")
-	local query = spider.urlencode(s_title)
+	local query = spider.urlencode(title)
 
 	local search_url = "https://www.goodreads.com/search?q=" .. query .. "&search%5Bfield%5D=title"
 
