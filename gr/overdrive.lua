@@ -189,7 +189,8 @@ function overdrive.search(title, author, overdrive_url)
 	-- end
 
 	if html then
-		return overdrive.parse_results(html, title, author)
+		local clean_title = title:gsub(":.*", ""):gsub("%s+$", "")
+		return overdrive.parse_results(html, clean_title, author)
 	else
 		return nil, "Search fetch error: " .. err
 	end
