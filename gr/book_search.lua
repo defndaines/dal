@@ -13,6 +13,7 @@ package.path = script_dir .. "/?.lua;" .. package.path
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
+local hoopla = require("hoopla")
 local audible = require("audible")
 
 local book, err = scraper.get_book_info(arg[1], arg[2])
@@ -29,11 +30,18 @@ if book then
 			end
 		end
 	else
-		audiobook = audible.search(book.title, book.author)
+		audiobook = hoopla.search(book.title, book.author)
 
 		if audiobook then
 			book.hours = audiobook.hours
-			book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
+			book.tags[#book.tags + 1] = "[hoopla](" .. audiobook.hoopla .. ")"
+		else
+			audiobook = audible.search(book.title, book.author)
+
+			if audiobook then
+				book.hours = audiobook.hours
+				book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
+			end
 		end
 	end
 
