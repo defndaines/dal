@@ -73,7 +73,7 @@ end
 
 function audible.search(title, author)
 	local s_title = title:gsub("’s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
+	local s_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
 	local query = spider.urlencode(s_title .. " " .. s_author)
 
 	-- feature six is English

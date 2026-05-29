@@ -70,7 +70,7 @@ function hoopla.search(title, author)
 	end
 
 	local s_title = title:gsub("'s", ""):gsub(":.*", ""):gsub("%p", " ")
-	local s_author = author:gsub("%s*%([^)]*%)", ""):gsub(":", ""):gsub("%.(%S)", "%1")
+	local s_author = (author:match("^[^,]+") or author):gsub("%s*%([^)]*%)", ""):match("%S+$") or author
 	local query = s_title .. " " .. s_author
 
 	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(query)
