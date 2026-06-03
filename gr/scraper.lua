@@ -72,6 +72,15 @@ function scraper.get_book_info(title, author)
 
 	local book_url = parser.book_link(html, title, author)
 
+	if not book_url and author then
+		local last_name = (author:match("^[^,]+") or author):match("%S+$")
+		local fallback_url = "https://www.goodreads.com/search?q=" .. query .. "+" .. spider.urlencode(last_name)
+		html, err = spider.fetch_url(fallback_url)
+		if html then
+			book_url = parser.book_link(html, title, author)
+		end
+	end
+
 	if not book_url then
 		return nil, "Book link not found."
 	end
