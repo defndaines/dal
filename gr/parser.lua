@@ -28,6 +28,7 @@ function parser.book_link(html, title, author)
 
 		local _title = book_title:select("span")[1]:getcontent()
 			:gsub("&#39;", "'"):gsub("&amp;", "&"):gsub("&quot;", '"'):gsub("&apos;", "'")
+			:gsub("\xe2\x80\x99", "'"):gsub("\xe2\x80\x98", "'")
 			:lower()
 
 		if _title:sub(1, #title) ~= title:lower() then
