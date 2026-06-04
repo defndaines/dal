@@ -33,8 +33,12 @@ for i, book in ipairs(books) do
 
 	if info then
 		local has_audio = book.hours or info.hours
+		local no_audio = false
+		for _, t in ipairs(book.tags) do
+			if t == "no-audio" then no_audio = true; break end
+		end
 
-		if not has_audio then
+		if not has_audio and not no_audio then
 			local audiobook = overdrive.search_libraries(info.title, info.author)
 
 			if audiobook then
