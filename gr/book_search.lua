@@ -16,12 +16,22 @@ local overdrive = require("overdrive")
 local hoopla = require("hoopla")
 local audible = require("audible")
 
+local function plausible_duration(hours, pages)
+	if not pages or not hours then return true end
+	local pages_num = tonumber(pages)
+	if not pages_num or pages_num == 0 then return true end
+	local h, m = hours:match("(%d+):(%d+)")
+	if not h then return true end
+	-- Require at least 0.4 minutes per page; typical audiobooks are ~1.5-2 min/page
+	return (tonumber(h) * 60 + tonumber(m)) >= pages_num * 0.4
+end
+
 local book, err = scraper.get_book_info(arg[1], arg[2])
 
 if book then
 	local audiobook = overdrive.search_libraries(book.title, book.author)
 
-	if audiobook then
+	if audiobook and plausible_duration(audiobook.duration, book.pages) then
 		book.hours = audiobook.duration
 
 		if audiobook.awards then
@@ -32,13 +42,13 @@ if book then
 	else
 		audiobook = hoopla.search(book.title, book.author)
 
-		if audiobook then
+		if audiobook and plausible_duration(audiobook.hours, book.pages) then
 			book.hours = audiobook.hours
 			book.tags[#book.tags + 1] = "[hoopla](" .. audiobook.hoopla .. ")"
 		else
 			audiobook = audible.search(book.title, book.author)
 
-			if audiobook then
+			if audiobook and plausible_duration(audiobook.hours, book.pages) then
 				book.hours = audiobook.hours
 				book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
 			end
