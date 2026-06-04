@@ -10,6 +10,18 @@ local scraper = {}
 local spider = require("spider")
 local parser = require("parser")
 
+local author_cache = {}
+
+local function fetch_author_country(url)
+	if author_cache[url] ~= nil then
+		return author_cache[url]
+	end
+	local html = spider.fetch_url(url)
+	local country = html and parser.author_details(html)
+	author_cache[url] = country or false
+	return country
+end
+
 function scraper.audit_book(orig)
 	local gr_url = orig.url:gsub(" ;.*", "")
 	local html, err = spider.fetch_url(gr_url)
@@ -38,12 +50,8 @@ function scraper.audit_book(orig)
 	--     print("INFO:", "original author '" .. orig.author .. "' differs from " .. book.author)
 	-- end
 
-	if book.author_link then
-		html = spider.fetch_url(book.author_link)
-
-		if html then
-			book.country = parser.author_details(html)
-		end
+	if book.author_link and not (orig.country and orig.country ~= "") then
+		book.country = fetch_author_country(book.author_link)
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
 
@@ -108,17 +116,7 @@ function scraper.get_book_info(title, author)
 	-- end
 
 	if book.author_link then
-		html, err = spider.fetch_url(book.author_link)
-
-		if html then
-			-- local file = io.open("spec/" .. (author:gsub("%s", "-")) .. ".html", "w")
-			-- file:write(html)
-			-- file:close()
-
-			book.country = parser.author_details(html)
-		else
-			print("WARNING:", err)
-		end
+		book.country = fetch_author_country(book.author_link)
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
 

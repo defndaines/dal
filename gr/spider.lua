@@ -37,16 +37,7 @@ local function shell_escape(str)
 	return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
-function spider.fetch_url(url)
-	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(url)
-
-	local handle = io.popen(cmd)
-	if not handle then
-		return nil, "fetch_url.py failed to start"
-	end
-	local result = handle:read("*a")
-	handle:close()
-
+local function parse_fetch_result(result)
 	local body, status_str = result:match("^(.*)\n(%d+)%s*$")
 	local status = tonumber(status_str)
 
@@ -63,6 +54,30 @@ function spider.fetch_url(url)
 	end
 
 	return nil, status
+end
+
+function spider.fetch_url(url)
+	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(url)
+
+	local handle = io.popen(cmd)
+	if not handle then
+		return nil, "fetch_url.py failed to start"
+	end
+	local result = handle:read("*a")
+	handle:close()
+
+	return parse_fetch_result(result)
+end
+
+function spider.open_fetch(url)
+	local cmd = shell_escape(fetch_script) .. " " .. shell_escape(url)
+	return io.popen(cmd)
+end
+
+function spider.read_fetch(handle)
+	local result = handle:read("*a")
+	handle:close()
+	return parse_fetch_result(result)
 end
 
 return spider

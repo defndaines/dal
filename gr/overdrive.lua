@@ -186,23 +186,36 @@ function overdrive.search(title, author, overdrive_url)
 end
 
 function overdrive.search_libraries(title, author)
-	local urls = {
-		overdrive.lapl_url,
+	local audiobook = overdrive.search(title, author, overdrive.lapl_url)
+	if audiobook then return audiobook end
+
+	local fallback_urls = {
 		overdrive.lacountylibrary_url,
 		overdrive.hcpl_url,
 		overdrive.smpl_url,
 		overdrive.tpl_url,
 	}
 
-	local i = 1
-	local audiobook
+	local s_title = spider.search_title(title)
+	local s_author = spider.search_author(author)
+	local query = spider.urlencode(s_title .. " " .. s_author)
+	local clean_title = title:gsub(":.*", ""):gsub("%s+$", "")
 
-	repeat
-		audiobook = overdrive.search(title, author, urls[i])
-		i = i + 1
-	until audiobook or i > #urls
+	local handles = {}
+	for _, url in ipairs(fallback_urls) do
+		local search_url = url .. "/search?query=" .. query .. "&format=audiobook-overdrive&language=en"
+		handles[#handles + 1] = spider.open_fetch(search_url)
+	end
 
-	return audiobook
+	for _, handle in ipairs(handles) do
+		local html = spider.read_fetch(handle)
+		if html then
+			audiobook = overdrive.parse_results(html, clean_title, author)
+			if audiobook then return audiobook end
+		end
+	end
+
+	return nil
 end
 
 -- local book = overdrive.search("Stay True", "Hua Hsu") -- single result, includes awards
