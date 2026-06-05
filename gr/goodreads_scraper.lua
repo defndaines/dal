@@ -3,8 +3,14 @@
 local scraper = require("scraper")
 local data = require("data")
 local overdrive = require("overdrive")
+local hoopla = require("hoopla")
 local audible = require("audible")
 local socket = require("socket")
+
+local search_hoopla = false
+for _, a in ipairs(arg or {}) do
+	if a == "--hoopla" then search_hoopla = true end
+end
 
 -- local path = "../../kiroku/data/audiobooks.md"
 local path = "../../kiroku/data/eyebooks.md"
@@ -44,6 +50,12 @@ for i, book in ipairs(books) do
 			if audiobook then
 				book.hours = audiobook.duration
 				print(string.format("%3d", i) .. " " .. book.title .. ", new audiobook: " .. book.hours)
+
+				local hooplabook = hoopla.search(info.title, info.author)
+				if hooplabook then
+					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
+					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+				end
 			else
 				audiobook = audible.search(info.title, info.author)
 
@@ -57,6 +69,21 @@ for i, book in ipairs(books) do
 		end
 
 		book = data.merge(book, info)
+
+		if search_hoopla and (book.hours or info.hours) and not no_audio then
+			local has_hoopla = false
+			for _, t in ipairs(book.tags) do
+				if t:find("^%[hoopla%]") then has_hoopla = true; break end
+			end
+			if not has_hoopla then
+				local hooplabook = hoopla.search(info.title, info.author)
+				if hooplabook then
+					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
+					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+				end
+			end
+		end
+
 		fout:write(data.output(book) .. "\n")
 		fout:flush()
 	else

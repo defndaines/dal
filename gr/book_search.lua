@@ -39,6 +39,11 @@ if book then
 				book.tags[#book.tags + 1] = award
 			end
 		end
+
+		local hooplabook = hoopla.search(book.title, book.author)
+		if hooplabook and plausible_duration(hooplabook.hours, book.pages) then
+			book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
+		end
 	else
 		audiobook = hoopla.search(book.title, book.author)
 
