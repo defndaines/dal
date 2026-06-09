@@ -26,7 +26,11 @@ local function plausible_duration(hours, pages)
 	return (tonumber(h) * 60 + tonumber(m)) >= pages_num * 0.4
 end
 
-local book, err = scraper.get_book_info(arg[1], arg[2])
+local function trim(s)
+	return s and s:match("^%s*(.-)%s*$") or s
+end
+
+local book, err = scraper.get_book_info(trim(arg[1]), trim(arg[2]))
 
 if book then
 	local audiobook = overdrive.search_libraries(book.title, book.author)
