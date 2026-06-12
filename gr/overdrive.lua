@@ -101,6 +101,7 @@ local ignored_awards = {
 	["Hugo Award Nominee"] = true,
 	["Ian Fleming Steel Dagger"] = true,
 	["Libby Award Winner"] = true,
+	["Libby Award Nominee"] = true,
 	["Listen Up Award"] = true,
 	["Man Booker Prize for Fiction Nominee"] = true,
 	["Nebula Nominee"] = true,
@@ -117,7 +118,9 @@ local ignored_awards = {
 
 function overdrive.parse_results(html, title, author)
 	local results = html:match("window%.OverDrive%.mediaItems = ({.-});%s*window%.OverDrive%.")
-	if not results then return nil end
+	if not results then
+		return nil
+	end
 	local decoded = json.decode(results)
 	local book = select_book(decoded, title, author)
 
@@ -161,7 +164,9 @@ function overdrive.parse_results(html, title, author)
 end
 
 function overdrive.search(title, author, overdrive_url)
-	if not title or not author then return nil end
+	if not title or not author then
+		return nil
+	end
 	local s_title = spider.search_title(title)
 	local s_author = spider.search_author(author)
 	local query = spider.urlencode(s_title .. " " .. s_author)
@@ -187,7 +192,9 @@ end
 
 function overdrive.search_libraries(title, author)
 	local audiobook = overdrive.search(title, author, overdrive.lapl_url)
-	if audiobook then return audiobook end
+	if audiobook then
+		return audiobook
+	end
 
 	local fallback_urls = {
 		overdrive.lacountylibrary_url,
@@ -211,7 +218,9 @@ function overdrive.search_libraries(title, author)
 		local html = spider.read_fetch(handle)
 		if html then
 			audiobook = overdrive.parse_results(html, clean_title, author)
-			if audiobook then return audiobook end
+			if audiobook then
+				return audiobook
+			end
 		end
 	end
 
