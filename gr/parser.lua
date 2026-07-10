@@ -24,11 +24,19 @@ function parser.book_link(html, title, author)
 
 	for _, book in ipairs(books) do
 		local book_title = book:select("a.bookTitle")[1]
-		if not book_title then goto continue end
+		if not book_title then
+			goto continue
+		end
 
-		local _title = book_title:select("span")[1]:getcontent()
-			:gsub("&#39;", "'"):gsub("&amp;", "&"):gsub("&quot;", '"'):gsub("&apos;", "'")
-			:gsub("\xe2\x80\x99", "'"):gsub("\xe2\x80\x98", "'")
+		local _title = book_title
+			:select("span")[1]
+			:getcontent()
+			:gsub("&#39;", "'")
+			:gsub("&amp;", "&")
+			:gsub("&quot;", '"')
+			:gsub("&apos;", "'")
+			:gsub("\xe2\x80\x99", "'")
+			:gsub("\xe2\x80\x98", "'")
 			:lower()
 
 		if _title:sub(1, #title) ~= title:lower() then
@@ -122,6 +130,7 @@ local ignore_genres = {
 	["collections"] = true,
 	["college"] = true,
 	["comedy"] = true,
+	["comic book"] = true,
 	["comics manga"] = true,
 	["comics"] = true,
 	["contemporary romance"] = true,
