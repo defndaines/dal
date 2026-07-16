@@ -42,3 +42,7 @@ luac.out
 # Test and Scratch Files
 *.txt
 *.html
+
+# Python bytecode cache
+__pycache__/
+*.pyc
