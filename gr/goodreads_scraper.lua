@@ -9,7 +9,9 @@ local socket = require("socket")
 
 local search_hoopla = false
 for _, a in ipairs(arg or {}) do
-	if a == "--hoopla" then search_hoopla = true end
+	if a == "--hoopla" then
+		search_hoopla = true
+	end
 end
 
 -- local path = "../../kiroku/data/audiobooks.md"
@@ -37,7 +39,7 @@ if fcheck then
 				break
 			end
 		end
-		print("Resuming from book " .. resume_from .. " (after \"" .. last_title .. "\")")
+		print("Resuming from book " .. resume_from .. ' (after "' .. last_title .. '")')
 	end
 end
 
@@ -54,7 +56,9 @@ if resume_from == 1 then
 end
 
 for i, book in ipairs(books) do
-	if i < resume_from then goto continue end
+	if i < resume_from then
+		goto continue
+	end
 
 	-- print(string.format("%3d", i) .. " " .. book.title)
 
@@ -68,7 +72,10 @@ for i, book in ipairs(books) do
 		local has_audio = book.hours or info.hours
 		local no_audio = false
 		for _, t in ipairs(book.tags) do
-			if t == "no-audio" then no_audio = true; break end
+			if t == "no-audio" then
+				no_audio = true
+				break
+			end
 		end
 
 		if not has_audio and not no_audio then
@@ -90,6 +97,19 @@ for i, book in ipairs(books) do
 				if audiobook and audiobook.hours ~= "00:00" then
 					book.hours = audiobook.hours
 					print(string.format("%3d", i) .. " " .. book.title .. ", new Audible: " .. book.hours)
+
+					-- We didn’t find this at Overdrive or Hoopla, so any existing
+					-- hoopla tag must be for the ebook, not this new audiobook.
+					local kept_tags = {}
+					for _, t in ipairs(book.tags) do
+						if t:find("^%[hoopla%]") then
+							print(string.format("%3d", i) .. " " .. book.title .. ", removing stale hoopla ebook link")
+						else
+							kept_tags[#kept_tags + 1] = t
+						end
+					end
+					book.tags = kept_tags
+
 					book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
 				end
 			end
@@ -100,7 +120,10 @@ for i, book in ipairs(books) do
 		if search_hoopla and (book.hours or info.hours) and not no_audio then
 			local has_hoopla = false
 			for _, t in ipairs(book.tags) do
-				if t:find("^%[hoopla%]") then has_hoopla = true; break end
+				if t:find("^%[hoopla%]") then
+					has_hoopla = true
+					break
+				end
 			end
 			if not has_hoopla then
 				local hooplabook = hoopla.search(info.title, info.author)
