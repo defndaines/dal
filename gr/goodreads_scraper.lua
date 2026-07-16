@@ -71,20 +71,46 @@ for i, book in ipairs(books) do
 
 		local has_audio = book.hours or info.hours
 		local no_audio = false
+		local has_exclusive_audible = false
+		local has_plain_audible = false
 		for _, t in ipairs(book.tags) do
 			if t == "no-audio" then
 				no_audio = true
-				break
+			elseif t:find("^%[Audible Exclusive%]") then
+				has_exclusive_audible = true
+			elseif t:find("^%[Audible%]") then
+				has_plain_audible = true
 			end
 		end
 
-		if not has_audio and not no_audio then
+		-- A non-exclusive Audible edition might since have turned up at a
+		-- library, so keep checking Overdrive/Hoopla for those. An Audible
+		-- Exclusive edition never will.
+		if (not has_audio or has_plain_audible) and not has_exclusive_audible and not no_audio then
 			local audiobook = overdrive.search_libraries(info.title, info.author)
 
 			if audiobook then
 				book.hours = audiobook.duration
 				print(string.format("%3d", i) .. " " .. book.title .. ", new audiobook: " .. book.hours)
 
+				-- The library copy supersedes the non-exclusive Audible link.
+				if has_plain_audible then
+					local kept_tags = {}
+					for _, t in ipairs(book.tags) do
+						if not t:find("^%[Audible%]") then
+							kept_tags[#kept_tags + 1] = t
+						end
+					end
+					book.tags = kept_tags
+				end
+
+				local hooplabook = hoopla.search(info.title, info.author)
+				if hooplabook then
+					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
+					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+				end
+			elseif has_plain_audible then
+				-- Already found on Audible; just check whether Hoopla has it too.
 				local hooplabook = hoopla.search(info.title, info.author)
 				if hooplabook then
 					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
