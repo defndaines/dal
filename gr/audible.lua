@@ -65,6 +65,20 @@ function audible.find_link(html, title, author, url)
 	return nil
 end
 
+-- These publishers mean the audiobook was produced by Amazon/Audible itself
+-- and isn’t available anywhere else. Other publishers (Brilliance Audio,
+-- Podium Audio, the print publisher’s own audio imprint, etc.) are available
+-- through Overdrive/Hoopla/other libraries, even if this book wasn’t found
+-- there.
+local exclusive_publishers = {
+	["Audible Studios"] = true,
+	["Amazon Original Stories"] = true,
+}
+
+function audible.find_publisher(html)
+	return html:match('"publisher":{"name":"([^"]*)"')
+end
+
 function audible.search(title, author)
 	local s_title = spider.search_title(title)
 	local s_author = spider.search_author(author)
@@ -81,15 +95,24 @@ function audible.search(title, author)
 
 	local html, err = spider.fetch_url(search_url)
 
-	if html then
-		-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-audible-search.html", "w")
-		-- file:write(html)
-		-- file:close()
-
-		return audible.find_link(html, title, author, search_url)
-	else
+	if not html then
 		return nil, "Search fetch error: " .. err
 	end
+
+	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. "-audible-search.html", "w")
+	-- file:write(html)
+	-- file:close()
+
+	local result = audible.find_link(html, title, author, search_url)
+
+	if result then
+		local pd_html = spider.fetch_url(result.audible)
+		if pd_html then
+			result.exclusive = exclusive_publishers[audible.find_publisher(pd_html)] or false
+		end
+	end
+
+	return result
 end
 
 -- local title = "Emergency Skin"

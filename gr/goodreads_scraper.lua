@@ -110,7 +110,8 @@ for i, book in ipairs(books) do
 					end
 					book.tags = kept_tags
 
-					book.tags[#book.tags + 1] = "[Audible](" .. audiobook.audible .. ")"
+					local audible_label = audiobook.exclusive and "Audible Exclusive" or "Audible"
+					book.tags[#book.tags + 1] = "[" .. audible_label .. "](" .. audiobook.audible .. ")"
 				end
 			end
 		end
