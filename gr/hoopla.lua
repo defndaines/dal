@@ -23,10 +23,12 @@ function hoopla.find_audiobook(data, title, author)
 
 	for _, hit in ipairs(hits) do
 		local hit_title = (hit.title or ""):lower()
+		local language = hit.language and hit.language.name
 
-		if hit_title == clean_title
+		if (hit_title == clean_title
 			or hit_title:sub(1, #clean_title) == clean_title
-			or clean_title:sub(1, #hit_title) == hit_title
+			or clean_title:sub(1, #hit_title) == hit_title)
+			and (not language or language == "ENGLISH")
 		then
 			local artist_name = hit.primaryArtist and hit.primaryArtist.name or ""
 			local is_author = artist_name:find(last_name)

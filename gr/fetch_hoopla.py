@@ -13,6 +13,7 @@ query Search($criteria: SearchCriteria!) {
       titleId
       title
       seconds
+      language { name }
       primaryArtist { name }
       authors { name }
     }
