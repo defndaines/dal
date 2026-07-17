@@ -177,6 +177,7 @@ local ignore_genres = {
 	["ghosts"] = true,
 	["go"] = true,
 	["graphic novels comics"] = true,
+	["graphic novels manga"] = true,
 	["graphic novels"] = true,
 	["greece"] = true,
 	["grief"] = true,
