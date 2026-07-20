@@ -48,7 +48,7 @@ function parser.book_link(html, title, author)
 		end
 
 		local _authors = book:select("div.authorName__container a span")
-		local is_author_found = false
+		local is_author_found = not author
 
 		for _, _author in ipairs(_authors) do
 			local name = _author:getcontent():gsub("%s%s+", " ")
