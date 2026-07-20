@@ -20,6 +20,7 @@ local path = "../../kiroku/data/eyebooks.md"
 local books = data.parse(path)
 local outfile = "/tmp/" .. path:gsub(".*/", "")
 local info, err
+local updates = {}
 
 local resume_from = 1
 local fcheck = io.open(outfile, "r")
@@ -66,7 +67,7 @@ for i, book in ipairs(books) do
 
 	if info then
 		if tonumber(book.rating) and math.abs(book.rating - (info.rating or book.rating)) > 0.02 then
-			print(string.format("%3d", i) .. " " .. book.title .. ", rating: " .. book.rating .. " -> " .. info.rating)
+			table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", rating: " .. book.rating .. " -> " .. info.rating)
 		end
 
 		local has_audio = book.hours or info.hours
@@ -91,7 +92,7 @@ for i, book in ipairs(books) do
 
 			if audiobook then
 				book.hours = audiobook.duration
-				print(string.format("%3d", i) .. " " .. book.title .. ", new audiobook: " .. book.hours)
+				table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", new audiobook: " .. book.hours)
 
 				-- The library copy supersedes the non-exclusive Audible link.
 				if has_plain_audible then
@@ -107,14 +108,14 @@ for i, book in ipairs(books) do
 				local hooplabook = hoopla.search(info.title, info.author)
 				if hooplabook then
 					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
-					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+					table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
 				end
 			elseif has_plain_audible then
 				-- Already found on Audible; just check whether Hoopla has it too.
 				local hooplabook = hoopla.search(info.title, info.author)
 				if hooplabook then
 					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
-					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+					table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
 				end
 			else
 				audiobook = audible.search(info.title, info.author)
@@ -122,14 +123,14 @@ for i, book in ipairs(books) do
 				-- Audible will put up the page for upcoming books without the time.
 				if audiobook and audiobook.hours ~= "00:00" then
 					book.hours = audiobook.hours
-					print(string.format("%3d", i) .. " " .. book.title .. ", new Audible: " .. book.hours)
+					table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", new Audible: " .. book.hours)
 
 					-- We didn’t find this at Overdrive or Hoopla, so any existing
 					-- hoopla tag must be for the ebook, not this new audiobook.
 					local kept_tags = {}
 					for _, t in ipairs(book.tags) do
 						if t:find("^%[hoopla%]") then
-							print(string.format("%3d", i) .. " " .. book.title .. ", removing stale hoopla ebook link")
+							table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", removing stale hoopla ebook link")
 						else
 							kept_tags[#kept_tags + 1] = t
 						end
@@ -156,7 +157,7 @@ for i, book in ipairs(books) do
 				local hooplabook = hoopla.search(info.title, info.author)
 				if hooplabook then
 					book.tags[#book.tags + 1] = "[hoopla](" .. hooplabook.hoopla .. ")"
-					print(string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
+					table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", hoopla: " .. hooplabook.hoopla)
 				end
 			end
 		end
@@ -172,3 +173,10 @@ for i, book in ipairs(books) do
 end
 
 fout:close()
+
+if #updates > 0 then
+	print("\n")
+	for _, msg in ipairs(updates) do
+		print(msg)
+	end
+end
