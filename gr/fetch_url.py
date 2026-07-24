@@ -120,8 +120,8 @@ for delay in RATE_LIMIT_BACKOFFS:
     time.sleep(delay)
     r, status = fetch(url, cookie_str)
 
-if status != 200 and status not in RATE_LIMIT_STATUSES:
-    log(f"WAF challenge (status {status}) — refreshing cookies via headless browser")
+if status != 200:
+    log(f"status {status} still failing after retries — refreshing cookies via headless browser")
     cookie_str = refresh_cookies(url)
     r, status = fetch(url, cookie_str)
     if status != 200:
