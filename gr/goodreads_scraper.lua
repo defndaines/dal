@@ -8,9 +8,12 @@ local audible = require("audible")
 local socket = require("socket")
 
 local search_hoopla = false
+local search_awards = false
 for _, a in ipairs(arg or {}) do
 	if a == "--hoopla" then
 		search_hoopla = true
+	elseif a == "--awards" then
+		search_awards = true
 	end
 end
 
@@ -145,6 +148,20 @@ for i, book in ipairs(books) do
 
 		book = data.merge(book, info)
 
+		if search_awards then
+			local existing_tags = {}
+			for _, t in ipairs(book.tags) do
+				existing_tags[t] = true
+			end
+			for _, award in ipairs(info.awards) do
+				if not existing_tags[award] then
+					book.tags[#book.tags + 1] = award
+					existing_tags[award] = true
+					table.insert(updates, string.format("%3d", i) .. " " .. book.title .. ", new award: " .. award)
+				end
+			end
+		end
+
 		if search_hoopla and (book.hours or info.hours) and not no_audio then
 			local has_hoopla = false
 			for _, t in ipairs(book.tags) do
@@ -168,7 +185,7 @@ for i, book in ipairs(books) do
 		print("ERROR (" .. i .. "):", err)
 	end
 
-	socket.sleep(0.2)
+	socket.sleep(1.5)
 	::continue::
 end
 
