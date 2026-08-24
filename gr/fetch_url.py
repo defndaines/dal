@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 RATE_LIMIT_STATUSES = {429, 503}
-RATE_LIMIT_BACKOFFS = [3, 8, 20, 45]
+RATE_LIMIT_BACKOFFS = [3, 8]
 
 COOKIE_DIR = Path.home() / ".spider_cookies"
 
@@ -120,7 +120,7 @@ for delay in RATE_LIMIT_BACKOFFS:
     time.sleep(delay)
     r, status = fetch(url, cookie_str)
 
-if status != 200 and status not in RATE_LIMIT_STATUSES:
+if status != 200:
     log(f"status {status} still failing after retries — refreshing cookies via headless browser")
     cookie_str = refresh_cookies(url)
     r, status = fetch(url, cookie_str)
