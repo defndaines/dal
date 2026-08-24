@@ -42,7 +42,9 @@ function hoopla.find_audiobook(data, title, author)
 				end
 			end
 
-			if is_author then
+			-- Ebook hits have no audio duration; skip them since Hoopla
+			-- ebooks don't load onto a Kindle and aren't worth tracking.
+			if is_author and hit.seconds and hit.seconds > 0 then
 				return {
 					title = hit.title,
 					author = artist_name,
