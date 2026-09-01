@@ -34,7 +34,10 @@ function scraper.audit_book(orig)
 	-- file:write(html)
 	-- file:close()
 
-	local book = parser.book_details(html)
+	local ok, book = pcall(parser.book_details, html)
+	if not ok then
+		return nil, "Book page parse error: " .. book
+	end
 	book.url = orig.url
 
 	-- if book.title ~= orig.title then
@@ -103,7 +106,10 @@ function scraper.get_book_info(title, author)
 	-- file:write(html)
 	-- file:close()
 
-	local book = parser.book_details(html)
+	local ok, book = pcall(parser.book_details, html)
+	if not ok then
+		return nil, "Book page parse error: " .. book
+	end
 	book.url = book_url
 
 	-- if not is_search and book.title ~= title then

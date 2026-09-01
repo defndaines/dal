@@ -113,6 +113,7 @@ local ignore_genres = {
 	["bande dessinée"] = true,
 	["banned books"] = true,
 	["biography memoir"] = true,
+	["black author"] = true,
 	["book club"] = true,
 	["books about books"] = true,
 	["brazil"] = true,
@@ -147,6 +148,7 @@ local ignore_genres = {
 	["dragonlance"] = true,
 	["dragons"] = true,
 	["drama"] = true,
+	["drugs"] = true,
 	["dungeons and dragons"] = true,
 	["ecology"] = true,
 	["education"] = true,
@@ -182,14 +184,17 @@ local ignore_genres = {
 	["greece"] = true,
 	["grief"] = true,
 	["hard boiled"] = true,
+	["haunted house"] = true,
 	["high fantasy"] = true,
 	["historical fantasy"] = true,
+	["historical mystery"] = true,
 	["horror thriller"] = true,
 	["horses"] = true,
 	["how to"] = true,
 	["hugo awards"] = true,
 	["hungary"] = true,
 	["india"] = true,
+	["iran"] = true,
 	["ireland"] = true,
 	["israel"] = true,
 	["italy"] = true,
@@ -227,6 +232,8 @@ local ignore_genres = {
 	["novel in verse"] = true,
 	["novels"] = true,
 	["oral history"] = true,
+	["outdoors"] = true,
+	["paganism"] = true,
 	["pakistan"] = true,
 	["parenting"] = true,
 	["philosophy"] = true,
@@ -236,6 +243,7 @@ local ignore_genres = {
 	["political science"] = true,
 	["pop culture"] = true,
 	["poverty"] = true,
+	["programming"] = true,
 	["psychology"] = true,
 	["pulp"] = true,
 	["read for school"] = true,
@@ -260,10 +268,13 @@ local ignore_genres = {
 	["slice of life"] = true,
 	["social media"] = true,
 	["social movements"] = true,
+	["software"] = true,
 	["somalia"] = true,
 	["space"] = true,
 	["spain"] = true,
 	["spirituality"] = true,
+	["stem"] = true,
+	["summer"] = true,
 	["supernatural"] = true,
 	["survival"] = true,
 	["suspense"] = true,
@@ -278,6 +289,7 @@ local ignore_genres = {
 	["transport"] = true,
 	["travel"] = true,
 	["turkish"] = true,
+	["uganda"] = true,
 	["ukraine"] = true,
 	["unfinished"] = true,
 	["united states"] = true,
@@ -394,6 +406,10 @@ function parser.book_details(html)
 		elseif key ~= "ROOT_QUERY" then
 			print("unknown key", key)
 		end
+	end
+
+	if not details.primary then
+		error("book_details: no primary contributor found (unexpected page content)")
 	end
 
 	local author = details.contributors[details.primary.ref]
