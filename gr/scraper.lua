@@ -7,10 +7,16 @@ local scraper = {}
   https://www.goodreads.com/book/show/<book-id>
 ]]
 
+local socket = require("socket")
 local spider = require("spider")
 local parser = require("parser")
 
 local author_cache = {}
+
+-- Goodreads occasionally serves a 200 OK with a degraded/stub page (no
+-- primary contributor in the embedded data) instead of a proper error
+-- status. Retry those like the 429/503 backoff in fetch_url.py.
+local PARSE_RETRY_BACKOFFS = { 3, 8 }
 
 local function fetch_author_country(url)
 	if author_cache[url] ~= nil then
@@ -22,21 +28,40 @@ local function fetch_author_country(url)
 	return country
 end
 
-function scraper.audit_book(orig)
-	local gr_url = orig.url:gsub(" ;.*", "")
-	local html, err = spider.fetch_url(gr_url)
-
+local function fetch_and_parse_book(url)
+	local html, err = spider.fetch_url(url)
 	if not html then
 		return nil, "Book page fetch error: " .. err
 	end
 
-	-- local file = io.open("spec/" .. (orig.title:gsub("%s", "-")) .. ".html", "w")
-	-- file:write(html)
-	-- file:close()
-
 	local ok, book = pcall(parser.book_details, html)
+
+	for _, delay in ipairs(PARSE_RETRY_BACKOFFS) do
+		if ok then
+			break
+		end
+		io.stderr:write("[scraper] parse error for " .. url .. " (" .. book .. ") — retrying in " .. delay .. "s\n")
+		socket.sleep(delay)
+		html, err = spider.fetch_url(url)
+		if not html then
+			return nil, "Book page fetch error: " .. err
+		end
+		ok, book = pcall(parser.book_details, html)
+	end
+
 	if not ok then
 		return nil, "Book page parse error: " .. book
+	end
+
+	return book
+end
+
+function scraper.audit_book(orig)
+	local gr_url = orig.url:gsub(" ;.*", "")
+	local book, err = fetch_and_parse_book(gr_url)
+
+	if not book then
+		return nil, err
 	end
 	book.url = orig.url
 
@@ -96,19 +121,11 @@ function scraper.get_book_info(title, author)
 		return nil, "Book link not found."
 	end
 
-	html, err = spider.fetch_url(book_url)
+	local book
+	book, err = fetch_and_parse_book(book_url)
 
-	if not html then
-		return nil, "Book page fetch error: " .. err
-	end
-
-	-- local file = io.open("spec/" .. (title:gsub("%s", "-")) .. ".html", "w")
-	-- file:write(html)
-	-- file:close()
-
-	local ok, book = pcall(parser.book_details, html)
-	if not ok then
-		return nil, "Book page parse error: " .. book
+	if not book then
+		return nil, err
 	end
 	book.url = book_url
 
