@@ -10,6 +10,7 @@ local scraper = {}
 local socket = require("socket")
 local spider = require("spider")
 local parser = require("parser")
+local errlog = require("errlog")
 
 local author_cache = {}
 
@@ -40,7 +41,7 @@ local function fetch_and_parse_book(url)
 		if ok then
 			break
 		end
-		io.stderr:write("[scraper] parse error for " .. url .. " (" .. book .. ") — retrying in " .. delay .. "s\n")
+		errlog.write("[scraper] parse error for " .. url .. " (" .. book .. ") — retrying in " .. delay .. "s")
 		socket.sleep(delay)
 		html, err = spider.fetch_url(url)
 		if not html then
@@ -79,6 +80,7 @@ function scraper.audit_book(orig)
 	-- end
 
 	if book.author_link and not (orig.country and orig.country ~= "") then
+		socket.sleep(2)
 		book.country = fetch_author_country(book.author_link)
 		-- https://en.wikipedia.org/w/index.php?search=Author+Name ???
 	end
@@ -111,6 +113,7 @@ function scraper.get_book_info(title, author)
 	if not book_url and author then
 		local last_name = (author:match("^[^,]+") or author):match("%S+$")
 		local fallback_url = "https://www.goodreads.com/search?q=" .. query .. "+" .. spider.urlencode(last_name)
+		socket.sleep(2)
 		html, err = spider.fetch_url(fallback_url)
 		if html then
 			book_url = parser.book_link(html, title, author)
@@ -122,6 +125,7 @@ function scraper.get_book_info(title, author)
 	end
 
 	local book
+	socket.sleep(2)
 	book, err = fetch_and_parse_book(book_url)
 
 	if not book then

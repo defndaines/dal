@@ -1,5 +1,7 @@
 local spider = {}
 
+local errlog = require("errlog")
+
 local script_dir = debug.getinfo(1, "S").source:match("^@(.+)/[^/]+$") or "."
 local fetch_script = script_dir .. "/fetch_url.py"
 
@@ -50,7 +52,7 @@ local function parse_fetch_result(result)
 	end
 
 	if status == 202 then
-		io.stderr:write("[spider] Goodreads WAF challenge (202) — run refresh_cookie.sh\n")
+		errlog.write("[spider] Goodreads WAF challenge (202) — run refresh_cookie.sh")
 	end
 
 	return nil, status

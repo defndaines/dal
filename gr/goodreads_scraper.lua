@@ -6,6 +6,10 @@ local overdrive = require("overdrive")
 local hoopla = require("hoopla")
 local audible = require("audible")
 local socket = require("socket")
+local errlog = require("errlog")
+
+errlog.reset()
+print("Logging fetch/parse diagnostics to " .. errlog.path)
 
 local search_hoopla = false
 local search_awards = false
@@ -183,9 +187,13 @@ for i, book in ipairs(books) do
 		fout:flush()
 	else
 		print("ERROR (" .. i .. "):", err)
+		-- Preserve the original row so it isn't dropped from the output file;
+		-- otherwise it has to be manually ported back in after the fact.
+		fout:write(data.output(book) .. "\n")
+		fout:flush()
 	end
 
-	socket.sleep(1.5)
+	socket.sleep(4)
 	::continue::
 end
 
