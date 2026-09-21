@@ -39,7 +39,32 @@ function parser.book_link(html, title, author)
 			:gsub("\xe2\x80\x98", "'")
 			:lower()
 
-		if _title:sub(1, #title) ~= title:lower() then
+		local lower_title = title:lower()
+		local title_matches = _title:sub(1, #lower_title) == lower_title
+
+		if not title_matches then
+			-- Loosened match: allow the query to match the subtitle that
+			-- follows a colon, e.g. "The Legend of Korra: Kya and the
+			-- Secret of the Sand" when searching for just "Kya and the
+			-- Secret of the Sand". This is deliberately narrow (anchored
+			-- right after "<colon><space>") rather than a general
+			-- substring search, which was too prone to false matches.
+			local pos = 1
+			while true do
+				local colon_start, colon_end = _title:find(":%s*", pos)
+				if not colon_start then
+					break
+				end
+				local rest = _title:sub(colon_end + 1)
+				if rest:sub(1, #lower_title) == lower_title then
+					title_matches = true
+					break
+				end
+				pos = colon_end + 1
+			end
+		end
+
+		if not title_matches then
 			goto continue
 		elseif _title:find("Summary") then
 			goto continue
