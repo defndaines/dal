@@ -8,6 +8,8 @@ local audible = require("audible")
 local socket = require("socket")
 local errlog = require("errlog")
 
+math.randomseed(os.time())
+
 errlog.reset()
 print("Logging fetch/parse diagnostics to " .. errlog.path)
 
@@ -193,7 +195,7 @@ for i, book in ipairs(books) do
 		fout:flush()
 	end
 
-	socket.sleep(4)
+	socket.sleep(5 + math.random(1, 20))
 	::continue::
 end
 
