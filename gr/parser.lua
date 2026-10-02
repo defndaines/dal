@@ -12,7 +12,13 @@ function parser.book_link(html, title, author)
 	html = html:gsub("<script.-</script>", "")
 
 	local tree = htmlparser.parse(html, 50000)
-	local books = tree:select("table tr")
+	-- Goodreads now serves a React layout (div.Book) for search results;
+	-- the older table layout is kept for saved specs and as a fallback.
+	local books = tree:select("div.Book")
+	local new_layout = #books > 0
+	if not new_layout then
+		books = tree:select("table tr")
+	end
 
 	local link
 	local highest = 0
@@ -23,13 +29,19 @@ function parser.book_link(html, title, author)
 	end
 
 	for _, book in ipairs(books) do
-		local book_title = book:select("a.bookTitle")[1]
+		local book_title, title_node
+		if new_layout then
+			book_title = book:select("span.Text__title3 a")[1]
+			title_node = book_title
+		else
+			book_title = book:select("a.bookTitle")[1]
+			title_node = book_title and book_title:select("span")[1]
+		end
 		if not book_title then
 			goto continue
 		end
 
-		local _title = book_title
-			:select("span")[1]
+		local _title = title_node
 			:getcontent()
 			:gsub("&#39;", "'")
 			:gsub("&amp;", "&")
@@ -72,7 +84,12 @@ function parser.book_link(html, title, author)
 			goto continue
 		end
 
-		local _authors = book:select("div.authorName__container a span")
+		local _authors
+		if new_layout then
+			_authors = book:select("span.ContributorLink__name")
+		else
+			_authors = book:select("div.authorName__container a span")
+		end
 		local is_author_found = not author
 
 		for _, _author in ipairs(_authors) do
@@ -91,7 +108,12 @@ function parser.book_link(html, title, author)
 			goto continue
 		end
 
-		local rating = book:select("div span span")[1]:getcontent()
+		local rating
+		if new_layout then
+			rating = book:select("span.u-sr-only")[1]:getcontent()
+		else
+			rating = book:select("div span span")[1]:getcontent()
+		end
 		local count = tonumber((rating:match("([%d,]+) ratings?"):gsub(",", "")))
 
 		if count > highest then

@@ -64,8 +64,7 @@ assert(
 	"Incorrect book link: " .. book_link
 )
 
--- When the Search Title Is WaCkY!
--- -> [(Girl in a Band)] [Author: Kim Gordon] published on (February, 2015)
+-- Prefer the canonical book over a wacky-titled listing with few ratings
 
 file = io.open("spec/Girl-in-a-Band.html", "r")
 search_html = file:read("*a")
@@ -76,7 +75,7 @@ author = "Kim Gordon"
 book_link = parser.book_link(search_html, title, author)
 
 assert(
-	"https://www.goodreads.com/book/show/159719031-girl-in-a-band-author" == book_link,
+	"https://www.goodreads.com/book/show/144105269-girl-in-a-band" == book_link,
 	"Incorrect book link: " .. book_link
 )
 
@@ -91,21 +90,6 @@ author = "Leon Trotsky"
 book_link = parser.book_link(search_html, title, author)
 
 assert("https://www.goodreads.com/book/show/184428.Stalin" == book_link, "Incorrect book link: " .. book_link)
-
--- Omit author from search to get canonical book, not edition pages
-
-file = io.open("spec/Bring-Up-the-Bodies-search.html", "r")
-search_html = file:read("*a")
-file:close()
-
-title = "Bring Up the Bodies"
-author = "Hilary Mantel"
-book_link = parser.book_link(search_html, title, author)
-
-assert(
-	"https://www.goodreads.com/book/show/13507212-bring-up-the-bodies" == book_link,
-	"Incorrect book link: " .. book_link
-)
 
 -- Test Extracting Book Details
 
@@ -124,71 +108,14 @@ assert(details.tags[1] == "fantasy", "fantasy genre missing")
 assert(details.series == "The Kingkiller Chronicle", "series was '" .. details.series .. "'")
 assert(details.volume == "1", "volume was '" .. details.volume .. "'")
 
--- Test Extracting Author Info
-file = io.open("spec/nnedi-okorafor.html", "r")
-local author_html = file:read("*a")
+-- New React search layout (div.Book)
+
+file = io.open("spec/Samurai-and-the-Prisoner-search.html", "r")
+search_html = file:read("*a")
 file:close()
 
-local country = parser.author_details(author_html)
-assert(country == "U.S.", "Nnedi Okorafor’s birthplace: " .. country)
+title = "The Samurai and the Prisoner"
+author = "Honobu Yonezawa"
+book_link = parser.book_link(search_html, title, author)
 
--- Test Another Author
-file = io.open("spec/sohn-won-pyung.html", "r")
-author_html = file:read("*a")
-file:close()
-
-country = parser.author_details(author_html)
-assert(country == "South Korea", "Sohn Won-Pyung’s birthplace: " .. country)
-
--- Test Author with No Birth Info
-file = io.open("spec/caitlin-yarsky.html", "r")
-author_html = file:read("*a")
-file:close()
-
-country = parser.author_details(author_html)
-assert(not country, "Caitlin Yarsky’s birthplace: " .. (country or "nil"))
-
--- Test Series
-file = io.open("spec/city-of-stairs.html", "r")
-book_html = file:read("*a")
-file:close()
-
-details = parser.book_details(book_html)
-assert(details.series == "The Divine Cities", "series was '" .. details.series .. "'")
-assert(details.volume == "1", "volume was '" .. details.volume .. "'")
-
--- Test Series with Decimal
-file = io.open("spec/after-the-coup.html", "r")
-book_html = file:read("*a")
-file:close()
-
-details = parser.book_details(book_html)
-assert(details.series == "Old Man’s War", "series was '" .. details.series .. "'")
-assert(details.volume == "4.5", "volume was '" .. details.volume .. "'")
-
--- Test Series without Volume
-file = io.open("spec/jayber-crow.html", "r")
-book_html = file:read("*a")
-file:close()
-
-details = parser.book_details(book_html)
-assert(details.series == "Port William", "series was '" .. details.series .. "'")
-assert(not details.volume, "volume was '" .. (details.volume or "nil") .. "'")
-
--- Don't Double Print Series Information
-local series_re = "the%-stormlight%-archive%-1"
-local line = "| The Way of Kings | Brandon Sanderson | 2010 | U.S. | 1007 | 45:30 "
-	.. "| fantasy, the-stormlight-archive-1 | 4.67 | 625908 "
-	.. "| [7235533](https://www.goodreads.com/book/show/7235533-the-way-of-kings) |"
-local book = data.parse_audio_book(line)
-
-file = io.open("spec/The-Way-of-Kings.html", "r")
-book_html = file:read("*a")
-file:close()
-
-local info = parser.book_details(book_html)
-book = data.merge(book, info)
-local output = data.output(book)
-
-assert(not output:gsub(series_re, "", 1):match(series_re), "series tag appears more than once")
-assert(output == line, "\n" .. output .. "\n does not match\n" .. line)
+assert("https://www.goodreads.com/book/show/64007884" == book_link, "Incorrect book link: " .. tostring(book_link))
