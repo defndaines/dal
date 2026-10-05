@@ -114,7 +114,23 @@ function parser.book_link(html, title, author)
 		else
 			rating = book:select("div span span")[1]:getcontent()
 		end
-		local count = tonumber((rating:match("([%d,]+) ratings?"):gsub(",", "")))
+		-- Large counts are abbreviated, e.g. "227 thousand ratings", "1.2 million ratings"
+		local num, unit = rating:match("([%d,%.]+)%s+(%a+)%s+ratings?")
+		if unit ~= "thousand" and unit ~= "million" and unit ~= "billion" then
+			num, unit = rating:match("([%d,]+)()%s+ratings?")
+			unit = nil
+		end
+		if not num then
+			goto continue
+		end
+		local count = tonumber((num:gsub(",", ""))) or 0
+		if unit == "thousand" then
+			count = count * 1000
+		elseif unit == "million" then
+			count = count * 1000000
+		elseif unit == "billion" then
+			count = count * 1000000000
+		end
 
 		if count > highest then
 			highest = count
